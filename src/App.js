@@ -212,14 +212,6 @@ const StudyCalendarApp = () => {
 
   // Career tracking and job market simulation
   const [careerData, setCareerData] = useState(() => {
-    const saved = localStorage.getItem('career-data');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (error) {
-        console.error('Error parsing career data:', error);
-      }
-    }
     return {
       targetRole: 'Data Analyst',
       targetLocation: 'Remote/US',
@@ -343,14 +335,6 @@ const StudyCalendarApp = () => {
 
   // Load or initialize settings
   const [settings, setSettings] = useState(() => {
-    const saved = localStorage.getItem('study-calendar-settings');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (error) {
-        console.error('Error parsing settings:', error);
-      }
-    }
     return {
       startDate: new Date().toISOString().split('T')[0],
       currentWeek: 0,
@@ -362,40 +346,18 @@ const StudyCalendarApp = () => {
 
   // Generate current week schedule
   const [studySchedule, setStudySchedule] = useState(() => {
-    const saved = localStorage.getItem('study-calendar-data');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        // Verify if saved data is for current week, otherwise regenerate
-        const currentWeekSchedule = generateWeekSchedule(settings.currentWeek);
-        const savedWeek = parsed[0]?.week;
-        const currentWeek = currentWeekSchedule[0]?.week;
-
-        if (savedWeek === currentWeek) {
-          return parsed;
-        }
-      } catch (error) {
-        console.error('Error parsing saved schedule:', error);
-      }
-    }
     return generateWeekSchedule(settings.currentWeek);
   });
 
   // App state
-  const [notificationsEnabled, setNotificationsEnabled] = useState(() => {
-    const saved = localStorage.getItem('notifications-enabled');
-    return saved ? JSON.parse(saved) : false;
-  });
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 
   const [currentTime, setCurrentTime] = useState(new Date());
   const [timerActive, setTimerActive] = useState(false);
   const [timerPaused, setTimerPaused] = useState(false);
   const [timeLeft, setTimeLeft] = useState(25 * 60);
   const [isBreakTime, setIsBreakTime] = useState(false);
-  const [pomodoroCount, setPomodoroCount] = useState(() => {
-    const saved = localStorage.getItem('pomodoro-count');
-    return saved ? parseInt(saved, 10) : 0;
-  });
+  const [pomodoroCount, setPomodoroCount] = useState(0);
 
   // Session management
   const [showNotesModal, setShowNotesModal] = useState(false);
@@ -413,14 +375,6 @@ const StudyCalendarApp = () => {
 
   // Portfolio Projects Management
   const [portfolioProjects, setPortfolioProjects] = useState(() => {
-    const saved = localStorage.getItem('portfolio-projects');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (error) {
-        console.error('Error parsing portfolio projects:', error);
-      }
-    }
     return [
       {
         id: 1,
@@ -468,28 +422,10 @@ const StudyCalendarApp = () => {
   });
 
   // Job Applications Tracking
-  const [jobApplications, setJobApplications] = useState(() => {
-    const saved = localStorage.getItem('job-applications');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (error) {
-        console.error('Error parsing job applications:', error);
-      }
-    }
-    return [];
-  });
+  const [jobApplications, setJobApplications] = useState([]);
 
   // Interview Preparation
   const [interviewPrep, setInterviewPrep] = useState(() => {
-    const saved = localStorage.getItem('interview-prep');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (error) {
-        console.error('Error parsing interview prep:', error);
-      }
-    }
     return {
       commonQuestions: [
         { question: "Tell me about yourself", practiced: false, notes: '' },
@@ -512,14 +448,6 @@ const StudyCalendarApp = () => {
 
   // Professional Network
   const [professionalNetwork, setProfessionalNetwork] = useState(() => {
-    const saved = localStorage.getItem('professional-network');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (error) {
-        console.error('Error parsing professional network:', error);
-      }
-    }
     return {
       linkedinConnections: 0,
       industryEvents: 0,
@@ -527,44 +455,6 @@ const StudyCalendarApp = () => {
       dataCommunitiesMember: []
     };
   });
-
-  // Save data to localStorage
-  useEffect(() => {
-    localStorage.setItem('study-calendar-data', JSON.stringify(studySchedule));
-  }, [studySchedule]);
-
-  useEffect(() => {
-    localStorage.setItem('study-calendar-settings', JSON.stringify(settings));
-  }, [settings]);
-
-  useEffect(() => {
-    localStorage.setItem('notifications-enabled', JSON.stringify(notificationsEnabled));
-  }, [notificationsEnabled]);
-
-  useEffect(() => {
-    localStorage.setItem('pomodoro-count', pomodoroCount.toString());
-  }, [pomodoroCount]);
-
-  useEffect(() => {
-    localStorage.setItem('career-data', JSON.stringify(careerData));
-  }, [careerData]);
-
-  // Phase 2: Save additional career data
-  useEffect(() => {
-    localStorage.setItem('portfolio-projects', JSON.stringify(portfolioProjects));
-  }, [portfolioProjects]);
-
-  useEffect(() => {
-    localStorage.setItem('job-applications', JSON.stringify(jobApplications));
-  }, [jobApplications]);
-
-  useEffect(() => {
-    localStorage.setItem('interview-prep', JSON.stringify(interviewPrep));
-  }, [interviewPrep]);
-
-  useEffect(() => {
-    localStorage.setItem('professional-network', JSON.stringify(professionalNetwork));
-  }, [professionalNetwork]);
 
   // Update career readiness when study progress changes
   useEffect(() => {
@@ -932,37 +822,37 @@ const StudyCalendarApp = () => {
     const detailedMarketData = getDetailedJobMarketData();
 
     return (
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6">
         {/* AI Recommendations */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h2 className="text-2xl font-semibold mb-4 flex items-center">
-            <span className="mr-3">🤖</span>
+        <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
+          <h2 className="text-lg md:text-2xl font-semibold mb-4 flex items-center">
+            <span className="mr-2 md:mr-3">🤖</span>
             AI Career Recommendations
           </h2>
 
-          <div className="space-y-4">
+          <div className="space-y-3 md:space-y-4">
             {aiRecommendations.slice(0, 3).map((rec, index) => (
-              <div key={index} className={`border-l-4 p-4 rounded-lg ${
+              <div key={index} className={`border-l-4 p-3 md:p-4 rounded-lg ${
                 rec.priority === 'high' ? 'border-red-500 bg-red-50' :
                 rec.priority === 'medium' ? 'border-yellow-500 bg-yellow-50' :
                 'border-green-500 bg-green-50'
               }`}>
-                <div className="flex items-start justify-between">
+                <div className="flex flex-col md:flex-row md:items-start justify-between space-y-2 md:space-y-0">
                   <div className="flex-1">
-                    <h3 className="font-semibold text-gray-800 flex items-center">
+                    <h3 className="font-semibold text-gray-800 flex items-center text-sm md:text-base">
                       <span className={`inline-block w-2 h-2 rounded-full mr-2 ${
                         rec.priority === 'high' ? 'bg-red-500' :
                         rec.priority === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
                       }`}></span>
                       {rec.title}
                     </h3>
-                    <p className="text-gray-600 mt-1">{rec.description}</p>
-                    <div className="flex items-center space-x-4 mt-2">
-                      <span className="text-sm font-medium text-blue-600">📋 {rec.action}</span>
-                      <span className="text-sm text-green-600">📈 {rec.impact}</span>
+                    <p className="text-gray-600 mt-1 text-sm md:text-base">{rec.description}</p>
+                    <div className="flex flex-col md:flex-row md:items-center md:space-x-4 space-y-1 md:space-y-0 mt-2">
+                      <span className="text-xs md:text-sm font-medium text-blue-600">📋 {rec.action}</span>
+                      <span className="text-xs md:text-sm text-green-600">📈 {rec.impact}</span>
                     </div>
                   </div>
-                  <span className={`px-2 py-1 text-xs font-medium rounded ${
+                  <span className={`px-2 py-1 text-xs font-medium rounded self-start ${
                     rec.priority === 'high' ? 'bg-red-100 text-red-800' :
                     rec.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
                     'bg-green-100 text-green-800'
@@ -975,28 +865,28 @@ const StudyCalendarApp = () => {
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
           {/* Portfolio Projects */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h3 className="text-xl font-semibold mb-4 flex items-center">
-              <span className="mr-3">🎯</span>
+          <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
+            <h3 className="text-lg md:text-xl font-semibold mb-4 flex items-center">
+              <span className="mr-2 md:mr-3">🎯</span>
               Portfolio Projects
             </h3>
 
-            <div className="space-y-4">
+            <div className="space-y-3 md:space-y-4">
               {portfolioProjects.map((project) => (
-                <div key={project.id} className={`border rounded-lg p-4 ${
+                <div key={project.id} className={`border rounded-lg p-3 md:p-4 ${
                   project.status === 'completed' ? 'bg-green-50 border-green-200' :
                   project.status === 'in-progress' ? 'bg-blue-50 border-blue-200' :
                   settings.currentWeek >= project.weekUnlocked ? 'bg-gray-50 border-gray-200' :
                   'bg-gray-100 border-gray-300 opacity-50'
                 }`}>
-                  <div className="flex items-start justify-between">
+                  <div className="flex flex-col md:flex-row md:items-start justify-between space-y-3 md:space-y-0">
                     <div className="flex-1">
-                      <h4 className="font-medium text-gray-800">{project.title}</h4>
-                      <p className="text-sm text-gray-600 mt-1">{project.description}</p>
+                      <h4 className="font-medium text-gray-800 text-sm md:text-base">{project.title}</h4>
+                      <p className="text-xs md:text-sm text-gray-600 mt-1">{project.description}</p>
 
-                      <div className="flex items-center space-x-4 mt-2">
+                      <div className="flex flex-wrap items-center gap-2 mt-2">
                         <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded">
                           {'⭐'.repeat(project.difficulty)} Difficulty
                         </span>
@@ -1019,7 +909,7 @@ const StudyCalendarApp = () => {
                       </div>
                     </div>
 
-                    <div className="ml-4">
+                    <div className="md:ml-4 self-start">
                       {project.status === 'completed' && <span className="text-2xl">✅</span>}
                       {project.status === 'in-progress' && <span className="text-2xl">🚧</span>}
                       {project.status === 'not-started' && settings.currentWeek >= project.weekUnlocked &&
@@ -1042,22 +932,22 @@ const StudyCalendarApp = () => {
           </div>
 
           {/* Job Market Intelligence */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h3 className="text-xl font-semibold mb-4 flex items-center">
-              <span className="mr-3">📊</span>
+          <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
+            <h3 className="text-lg md:text-xl font-semibold mb-4 flex items-center">
+              <span className="mr-2 md:mr-3">📊</span>
               Market Intelligence
             </h3>
 
             <div className="space-y-4">
               {/* Industry Breakdown */}
               <div>
-                <h4 className="font-medium text-gray-800 mb-2">Top Industries Hiring</h4>
+                <h4 className="font-medium text-gray-800 mb-2 text-sm md:text-base">Top Industries Hiring</h4>
                 <div className="space-y-2">
                   {detailedMarketData.industryData.slice(0, 4).map((industry) => (
                     <div key={industry.name} className="flex justify-between items-center">
-                      <span className="text-sm text-gray-700">{industry.name}</span>
+                      <span className="text-xs md:text-sm text-gray-700">{industry.name}</span>
                       <div className="flex items-center space-x-2">
-                        <span className="text-sm font-medium text-green-600">
+                        <span className="text-xs md:text-sm font-medium text-green-600">
                           ${industry.avgSalary.toLocaleString()}
                         </span>
                         <span className="text-xs text-gray-500">
@@ -1071,14 +961,14 @@ const StudyCalendarApp = () => {
 
               {/* Salary Progression */}
               <div>
-                <h4 className="font-medium text-gray-800 mb-2">Career Path & Salary</h4>
+                <h4 className="font-medium text-gray-800 mb-2 text-sm md:text-base">Career Path & Salary</h4>
                 <div className="space-y-2">
                   {detailedMarketData.salaryProgression.slice(0, 3).map((step) => (
                     <div key={step.year} className="flex justify-between items-center">
-                      <span className="text-sm text-gray-700">
+                      <span className="text-xs md:text-sm text-gray-700">
                         {step.year === 0 ? 'Entry' : `${step.year}y`} - {step.title}
                       </span>
-                      <span className="text-sm font-medium text-blue-600">
+                      <span className="text-xs md:text-sm font-medium text-blue-600">
                         ${step.salary.toLocaleString()}
                       </span>
                     </div>
@@ -1088,8 +978,8 @@ const StudyCalendarApp = () => {
 
               {/* Market Trends */}
               <div>
-                <h4 className="font-medium text-gray-800 mb-2">Market Trends</h4>
-                <div className="space-y-1 text-sm text-gray-600">
+                <h4 className="font-medium text-gray-800 mb-2 text-sm md:text-base">Market Trends</h4>
+                <div className="space-y-1 text-xs md:text-sm text-gray-600">
                   <div>🏠 {detailedMarketData.marketTrends.remoteWork}% remote positions</div>
                   <div>📈 {detailedMarketData.marketTrends.entryLevelDemand} entry-level demand</div>
                   <div>🎯 {detailedMarketData.marketTrends.skillsGapOpportunity} opportunity gap</div>
@@ -1099,12 +989,12 @@ const StudyCalendarApp = () => {
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
           {/* Job Applications Tracker */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-semibold flex items-center">
-                <span className="mr-3">📝</span>
+          <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
+            <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4 space-y-2 md:space-y-0">
+              <h3 className="text-lg md:text-xl font-semibold flex items-center">
+                <span className="mr-2 md:mr-3">📝</span>
                 Job Applications
               </h3>
               <button
@@ -1120,29 +1010,29 @@ const StudyCalendarApp = () => {
                   };
                   setJobApplications(prev => [newApp, ...prev]);
                 }}
-                className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 self-start md:self-auto"
               >
                 + Add Application
               </button>
             </div>
 
             {jobApplications.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <span className="text-4xl block mb-2">🎯</span>
-                <p>Ready to start applying?</p>
-                <p className="text-sm">Track your applications here</p>
+              <div className="text-center py-6 md:py-8 text-gray-500">
+                <span className="text-3xl md:text-4xl block mb-2">🎯</span>
+                <p className="text-sm md:text-base">Ready to start applying?</p>
+                <p className="text-xs md:text-sm">Track your applications here</p>
               </div>
             ) : (
               <div className="space-y-3">
                 {jobApplications.slice(0, 5).map((app) => (
                   <div key={app.id} className="border rounded-lg p-3">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h4 className="font-medium text-gray-800">{app.position}</h4>
-                        <p className="text-sm text-gray-600">{app.company}</p>
+                    <div className="flex flex-col md:flex-row md:justify-between md:items-start space-y-2 md:space-y-0">
+                      <div className="flex-1">
+                        <h4 className="font-medium text-gray-800 text-sm md:text-base">{app.position}</h4>
+                        <p className="text-xs md:text-sm text-gray-600">{app.company}</p>
                         <p className="text-xs text-gray-500">Applied: {app.appliedDate}</p>
                       </div>
-                      <span className={`px-2 py-1 text-xs rounded ${
+                      <span className={`px-2 py-1 text-xs rounded self-start ${
                         app.status === 'interview' ? 'bg-blue-100 text-blue-800' :
                         app.status === 'offered' ? 'bg-green-100 text-green-800' :
                         app.status === 'rejected' ? 'bg-red-100 text-red-800' :
@@ -1158,19 +1048,19 @@ const StudyCalendarApp = () => {
           </div>
 
           {/* Interview Preparation */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h3 className="text-xl font-semibold mb-4 flex items-center">
-              <span className="mr-3">🎤</span>
+          <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
+            <h3 className="text-lg md:text-xl font-semibold mb-4 flex items-center">
+              <span className="mr-2 md:mr-3">🎤</span>
               Interview Prep
             </h3>
 
             <div className="space-y-4">
               <div>
-                <h4 className="font-medium text-gray-800 mb-2">Common Questions</h4>
+                <h4 className="font-medium text-gray-800 mb-2 text-sm md:text-base">Common Questions</h4>
                 <div className="space-y-2">
                   {interviewPrep.commonQuestions.slice(0, 3).map((q, index) => (
                     <div key={index} className="flex items-center justify-between">
-                      <span className="text-sm text-gray-700 flex-1">{q.question}</span>
+                      <span className="text-xs md:text-sm text-gray-700 flex-1 pr-2">{q.question}</span>
                       <button
                         onClick={() => {
                           setInterviewPrep(prev => ({
@@ -1180,7 +1070,7 @@ const StudyCalendarApp = () => {
                             )
                           }));
                         }}
-                        className={`ml-2 text-lg ${q.practiced ? 'text-green-600' : 'text-gray-400'}`}
+                        className={`text-lg ${q.practiced ? 'text-green-600' : 'text-gray-400'}`}
                       >
                         {q.practiced ? '✅' : '⬜'}
                       </button>
@@ -1190,11 +1080,11 @@ const StudyCalendarApp = () => {
               </div>
 
               <div>
-                <h4 className="font-medium text-gray-800 mb-2">Technical Skills</h4>
+                <h4 className="font-medium text-gray-800 mb-2 text-sm md:text-base">Technical Skills</h4>
                 <div className="space-y-2">
                   {interviewPrep.technicalQuestions.slice(0, 2).map((q, index) => (
                     <div key={index} className="flex items-center justify-between">
-                      <span className="text-sm text-gray-700 flex-1">{q.question}</span>
+                      <span className="text-xs md:text-sm text-gray-700 flex-1 pr-2">{q.question}</span>
                       <button
                         onClick={() => {
                           setInterviewPrep(prev => ({
@@ -1204,7 +1094,7 @@ const StudyCalendarApp = () => {
                             )
                           }));
                         }}
-                        className={`ml-2 text-lg ${q.practiced ? 'text-green-600' : 'text-gray-400'}`}
+                        className={`text-lg ${q.practiced ? 'text-green-600' : 'text-gray-400'}`}
                       >
                         {q.practiced ? '✅' : '⬜'}
                       </button>
@@ -1214,7 +1104,7 @@ const StudyCalendarApp = () => {
               </div>
 
               <div className="pt-3 border-t">
-                <div className="text-sm text-gray-600">
+                <div className="text-xs md:text-sm text-gray-600">
                   <div>📊 Progress: {Math.round((interviewPrep.commonQuestions.filter(q => q.practiced).length / interviewPrep.commonQuestions.length) * 100)}% practiced</div>
                   <div className="mt-1">🎯 Recommendation: Practice 2-3 questions weekly</div>
                 </div>
@@ -1224,34 +1114,34 @@ const StudyCalendarApp = () => {
         </div>
 
         {/* Professional Network & Resources */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h3 className="text-xl font-semibold mb-4 flex items-center">
-            <span className="mr-3">🌐</span>
+        <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
+          <h3 className="text-lg md:text-xl font-semibold mb-4 flex items-center">
+            <span className="mr-2 md:mr-3">🌐</span>
             Professional Development
           </h3>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
             <div>
-              <h4 className="font-medium text-gray-800 mb-3">Networking Progress</h4>
+              <h4 className="font-medium text-gray-800 mb-3 text-sm md:text-base">Networking Progress</h4>
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">LinkedIn Connections</span>
-                  <span className="text-sm font-medium">{professionalNetwork.linkedinConnections}</span>
+                  <span className="text-xs md:text-sm text-gray-600">LinkedIn Connections</span>
+                  <span className="text-xs md:text-sm font-medium">{professionalNetwork.linkedinConnections}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Industry Events</span>
-                  <span className="text-sm font-medium">{professionalNetwork.industryEvents}</span>
+                  <span className="text-xs md:text-sm text-gray-600">Industry Events</span>
+                  <span className="text-xs md:text-sm font-medium">{professionalNetwork.industryEvents}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Data Communities</span>
-                  <span className="text-sm font-medium">{professionalNetwork.dataCommunitiesMember.length}</span>
+                  <span className="text-xs md:text-sm text-gray-600">Data Communities</span>
+                  <span className="text-xs md:text-sm font-medium">{professionalNetwork.dataCommunitiesMember.length}</span>
                 </div>
               </div>
             </div>
 
             <div>
-              <h4 className="font-medium text-gray-800 mb-3">Recommended Communities</h4>
-              <div className="space-y-2 text-sm">
+              <h4 className="font-medium text-gray-800 mb-3 text-sm md:text-base">Recommended Communities</h4>
+              <div className="space-y-2 text-xs md:text-sm">
                 <div className="text-gray-700">• r/analytics (Reddit)</div>
                 <div className="text-gray-700">• Data Science Central</div>
                 <div className="text-gray-700">• Kaggle Learn</div>
@@ -1260,8 +1150,8 @@ const StudyCalendarApp = () => {
             </div>
 
             <div>
-              <h4 className="font-medium text-gray-800 mb-3">Next Steps</h4>
-              <div className="space-y-2 text-sm">
+              <h4 className="font-medium text-gray-800 mb-3 text-sm md:text-base">Next Steps</h4>
+              <div className="space-y-2 text-xs md:text-sm">
                 <div className="flex items-center text-gray-700">
                   <span className="mr-2">📱</span>
                   <span>Update LinkedIn profile</span>
@@ -1283,29 +1173,30 @@ const StudyCalendarApp = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-2 md:p-4">
       <div className="max-w-7xl mx-auto">
-        {/* Professional Header with Career Integration */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="p-3 bg-blue-600 rounded-lg">
-                <span className="text-white text-2xl">📊</span>
+        {/* Professional Header with Career Integration - Mobile Responsive */}
+        <div className="bg-white rounded-xl shadow-lg p-4 md:p-6 mb-4 md:mb-6">
+          {/* Header Content - Stacked on Mobile */}
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+            <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
+              <div className="p-2 md:p-3 bg-blue-600 rounded-lg self-start">
+                <span className="text-white text-lg md:text-2xl">📊</span>
               </div>
-              <div>
-                <h1 className="text-3xl font-bold text-gray-800">Study Calendar Pro</h1>
-                <p className="text-gray-600">{settings.studyGoal}</p>
-                <div className="flex items-center space-x-4 mt-1">
-                  <span className="text-sm text-blue-600 font-medium">
+              <div className="flex-1 min-w-0">
+                <h1 className="text-xl md:text-3xl font-bold text-gray-800 truncate">Study Calendar Pro</h1>
+                <p className="text-sm md:text-base text-gray-600 truncate">{settings.studyGoal}</p>
+                <div className="flex flex-wrap items-center gap-2 md:gap-4 mt-1">
+                  <span className="text-xs md:text-sm text-blue-600 font-medium">
                     Week {stats.currentWeek} of {stats.totalWeeks}
                   </span>
-                  <span className="text-sm text-gray-500">•</span>
-                  <span className="text-sm text-green-600 font-medium">
+                  <span className="text-xs md:text-sm text-gray-500">•</span>
+                  <span className="text-xs md:text-sm text-green-600 font-medium">
                     {getWeekStatus()}
                   </span>
                 </div>
-                {/* Career Status Integration */}
-                <div className="flex items-center space-x-6 mt-2 text-sm">
+                {/* Career Status Integration - Responsive */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 mt-2 text-xs md:text-sm">
                   <div className="flex items-center space-x-1">
                     <span className="text-orange-600">🎯</span>
                     <span className="text-gray-700">Job Readiness:</span>
@@ -1325,10 +1216,11 @@ const StudyCalendarApp = () => {
               </div>
             </div>
 
-            <div className="flex items-center space-x-6">
+            {/* Stats Section - Responsive Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-3 md:gap-6">
               {/* Study Streak */}
               <div className="text-center">
-                <div className="flex items-center justify-center space-x-1 text-2xl font-bold text-orange-600">
+                <div className="flex items-center justify-center space-x-1 text-lg md:text-2xl font-bold text-orange-600">
                   <span>🔥</span>
                   <span>{stats.currentStreak}</span>
                 </div>
@@ -1337,7 +1229,7 @@ const StudyCalendarApp = () => {
 
               {/* Career Readiness Score */}
               <div className="text-center">
-                <div className="flex items-center justify-center space-x-1 text-2xl font-bold text-green-600">
+                <div className="flex items-center justify-center space-x-1 text-lg md:text-2xl font-bold text-green-600">
                   <span>🎯</span>
                   <span>{careerReadiness.readinessScore}%</span>
                 </div>
@@ -1345,40 +1237,42 @@ const StudyCalendarApp = () => {
               </div>
 
               {/* Notifications */}
-              <button
-                onClick={() => {
-                  if (notificationsEnabled) {
-                    setNotificationsEnabled(false);
-                  } else {
-                    requestNotificationPermission();
-                  }
-                }}
-                className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors ${
-                  notificationsEnabled
-                    ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                <span>{notificationsEnabled ? '🔔' : '🔕'}</span>
-                <span className="text-sm font-medium">
-                  {notificationsEnabled ? 'Alerts On' : 'Enable Alerts'}
-                </span>
-              </button>
+              <div className="text-center">
+                <button
+                  onClick={() => {
+                    if (notificationsEnabled) {
+                      setNotificationsEnabled(false);
+                    } else {
+                      requestNotificationPermission();
+                    }
+                  }}
+                  className={`flex items-center justify-center space-x-1 px-2 py-1 rounded-lg transition-colors text-xs md:text-sm font-medium ${
+                    notificationsEnabled
+                      ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  <span>{notificationsEnabled ? '🔔' : '🔕'}</span>
+                  <span className="hidden sm:inline">
+                    {notificationsEnabled ? 'On' : 'Off'}
+                  </span>
+                </button>
+              </div>
 
               {/* Progress Stats */}
-              <div className="text-right">
-                <div className="text-2xl font-bold text-blue-600">{stats.weekProgress}%</div>
-                <div className="text-sm text-gray-600">Week Progress</div>
+              <div className="text-center">
+                <div className="text-lg md:text-2xl font-bold text-blue-600">{stats.weekProgress}%</div>
+                <div className="text-xs text-gray-600">Week Progress</div>
               </div>
             </div>
           </div>
 
-          {/* Phase 2: Tab Navigation */}
-          <div className="mt-6 border-b border-gray-200">
-            <nav className="flex space-x-8">
+          {/* Phase 2: Tab Navigation - Mobile Responsive */}
+          <div className="mt-4 md:mt-6 border-b border-gray-200 overflow-x-auto">
+            <nav className="flex space-x-4 md:space-x-8 min-w-max">
               <button
                 onClick={() => setActiveTab('schedule')}
-                className={`pb-3 px-1 border-b-2 font-medium text-sm transition-colors ${
+                className={`pb-3 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
                   activeTab === 'schedule'
                     ? 'border-blue-500 text-blue-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -1388,7 +1282,7 @@ const StudyCalendarApp = () => {
               </button>
               <button
                 onClick={() => setActiveTab('career')}
-                className={`pb-3 px-1 border-b-2 font-medium text-sm transition-colors ${
+                className={`pb-3 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
                   activeTab === 'career'
                     ? 'border-blue-500 text-blue-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -1400,33 +1294,33 @@ const StudyCalendarApp = () => {
           </div>
 
           {/* Course Progress Bar */}
-          <div className="mt-6">
+          <div className="mt-4 md:mt-6">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium text-gray-700">Course Progress</span>
-              <span className="text-sm text-gray-600">{stats.overallProgress}% Complete</span>
+              <span className="text-xs md:text-sm font-medium text-gray-700">Course Progress</span>
+              <span className="text-xs md:text-sm text-gray-600">{stats.overallProgress}% Complete</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-3">
+            <div className="w-full bg-gray-200 rounded-full h-2 md:h-3">
               <div
-                className="bg-gradient-to-r from-blue-500 to-green-500 h-3 rounded-full transition-all duration-300"
+                className="bg-gradient-to-r from-blue-500 to-green-500 h-2 md:h-3 rounded-full transition-all duration-300"
                 style={{ width: `${stats.overallProgress}%` }}
               ></div>
             </div>
           </div>
 
-          {/* Week Navigation */}
-          <div className="mt-4 flex items-center justify-between">
-            <div className="flex items-center space-x-3">
+          {/* Week Navigation - Mobile Responsive */}
+          <div className="mt-4 flex flex-col md:flex-row md:items-center md:justify-between space-y-3 md:space-y-0">
+            <div className="flex flex-wrap items-center gap-2 md:gap-3">
               <button
                 onClick={goToPreviousWeek}
                 disabled={settings.currentWeek === 0}
-                className="px-3 py-1 text-sm bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-1 text-xs md:text-sm bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 ← Previous Week
               </button>
 
               <button
                 onClick={() => setShowWeekSelector(!showWeekSelector)}
-                className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200"
+                className="px-3 py-1 text-xs md:text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200"
               >
                 Jump to Week...
               </button>
@@ -1434,25 +1328,27 @@ const StudyCalendarApp = () => {
               <button
                 onClick={goToNextWeek}
                 disabled={stats.weekProgress < 80}
-                className="px-3 py-1 text-sm bg-green-100 text-green-700 rounded-lg hover:bg-green-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-1 text-xs md:text-sm bg-green-100 text-green-700 rounded-lg hover:bg-green-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Next Week →
               </button>
             </div>
 
-            <p className="text-lg text-gray-700 italic">{getMotivationalMessage()}</p>
+            <p className="text-sm md:text-lg text-gray-700 italic text-center md:text-right">
+              {getMotivationalMessage()}
+            </p>
           </div>
 
-          {/* Week Selector */}
+          {/* Week Selector - Mobile Responsive */}
           {showWeekSelector && (
-            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-              <h3 className="text-lg font-semibold mb-3">Jump to Week</h3>
-              <div className="grid grid-cols-8 gap-2">
+            <div className="mt-4 p-3 md:p-4 bg-gray-50 rounded-lg">
+              <h3 className="text-base md:text-lg font-semibold mb-3">Jump to Week</h3>
+              <div className="grid grid-cols-4 md:grid-cols-8 gap-2">
                 {Array.from({ length: stats.totalWeeks }, (_, i) => (
                   <button
                     key={i}
                     onClick={() => jumpToWeek(i)}
-                    className={`p-2 text-sm rounded ${
+                    className={`p-2 text-xs md:text-sm rounded ${
                       i === settings.currentWeek
                         ? 'bg-blue-600 text-white'
                         : settings.completedWeeks.includes(i)
@@ -1470,30 +1366,30 @@ const StudyCalendarApp = () => {
 
         {/* Conditional Content Based on Active Tab */}
         {activeTab === 'schedule' ? (
-          <div className="grid lg:grid-cols-4 gap-6">
-            {/* Focus Timer & Stats */}
-            <div className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6">
+            {/* Focus Timer & Stats - Mobile Responsive */}
+            <div className="lg:col-span-1 order-2 lg:order-1 space-y-4 md:space-y-6">
               {/* Professional Focus Timer */}
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-xl font-semibold mb-4 flex items-center">
+              <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
+                <h2 className="text-lg md:text-xl font-semibold mb-4 flex items-center">
                   <span className="mr-2">⏰</span>
                   Focus Timer
                 </h2>
 
                 <div className="text-center">
-                  <div className="text-5xl font-bold text-gray-800 mb-2">
+                  <div className="text-3xl md:text-5xl font-bold text-gray-800 mb-2">
                     {formatTime(timeLeft)}
                   </div>
 
-                  <div className="text-lg text-gray-600 mb-4">
+                  <div className="text-base md:text-lg text-gray-600 mb-4">
                     {isBreakTime ? '☕ Break Time' : '📚 Study Time'}
                   </div>
 
-                  <div className="flex justify-center space-x-3 mb-4">
+                  <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-3 mb-4">
                     {!timerActive ? (
                       <button
                         onClick={startTimer}
-                        className="flex items-center space-x-2 bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors"
+                        className="flex items-center justify-center space-x-2 bg-green-500 text-white px-4 md:px-6 py-2 md:py-3 rounded-lg hover:bg-green-600 transition-colors text-sm md:text-base"
                       >
                         <span>▶️</span>
                         <span>Start Focus</span>
@@ -1502,14 +1398,14 @@ const StudyCalendarApp = () => {
                       <>
                         <button
                           onClick={pauseTimer}
-                          className="flex items-center space-x-2 bg-yellow-500 text-white px-4 py-3 rounded-lg hover:bg-yellow-600 transition-colors"
+                          className="flex items-center justify-center space-x-2 bg-yellow-500 text-white px-3 md:px-4 py-2 md:py-3 rounded-lg hover:bg-yellow-600 transition-colors text-sm md:text-base"
                         >
                           <span>{timerPaused ? '▶️' : '⏸️'}</span>
                           <span>{timerPaused ? 'Resume' : 'Pause'}</span>
                         </button>
                         <button
                           onClick={stopTimer}
-                          className="flex items-center space-x-2 bg-red-500 text-white px-4 py-3 rounded-lg hover:bg-red-600 transition-colors"
+                          className="flex items-center justify-center space-x-2 bg-red-500 text-white px-3 md:px-4 py-2 md:py-3 rounded-lg hover:bg-red-600 transition-colors text-sm md:text-base"
                         >
                           <span>⏹️</span>
                           <span>Stop</span>
@@ -1519,10 +1415,10 @@ const StudyCalendarApp = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <div className="text-sm text-gray-500">
+                    <div className="text-xs md:text-sm text-gray-500">
                       🍅 Today's Focus Sessions: {pomodoroCount}
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-xs md:text-sm text-gray-500">
                       ⏱️ Weekly Study Time: {stats.totalStudyTime} min
                     </div>
                   </div>
@@ -1530,57 +1426,57 @@ const StudyCalendarApp = () => {
               </div>
 
               {/* Weekly Stats with Career Integration */}
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+              <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
+                <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-4 flex items-center">
                   <span className="mr-2">📈</span>
                   This Week
                 </h3>
 
-                <div className="space-y-4">
+                <div className="space-y-3 md:space-y-4">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Sessions Complete</span>
-                    <span className="font-semibold text-blue-600">{stats.completedSessions}/{stats.totalSessions}</span>
+                    <span className="text-gray-600 text-sm md:text-base">Sessions Complete</span>
+                    <span className="font-semibold text-blue-600 text-sm md:text-base">{stats.completedSessions}/{stats.totalSessions}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Days Complete</span>
-                    <span className="font-semibold text-green-600">{stats.completedDays}/7</span>
+                    <span className="text-gray-600 text-sm md:text-base">Days Complete</span>
+                    <span className="font-semibold text-green-600 text-sm md:text-base">{stats.completedDays}/7</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Study Time</span>
-                    <span className="font-semibold text-purple-600">{stats.totalStudyTime} min</span>
+                    <span className="text-gray-600 text-sm md:text-base">Study Time</span>
+                    <span className="font-semibold text-purple-600 text-sm md:text-base">{stats.totalStudyTime} min</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Progress</span>
-                    <span className="font-semibold text-orange-600">{stats.weekProgress}%</span>
+                    <span className="text-gray-600 text-sm md:text-base">Progress</span>
+                    <span className="font-semibold text-orange-600 text-sm md:text-base">{stats.weekProgress}%</span>
                   </div>
 
                   {/* Career Progress Section */}
                   <div className="pt-3 border-t border-gray-200">
                     <div className="flex justify-between">
-                      <span className="text-gray-600">🎯 Career Skills</span>
-                      <span className="font-semibold text-green-600">+{careerReadiness.currentSkills.length} gained</span>
+                      <span className="text-gray-600 text-sm md:text-base">🎯 Career Skills</span>
+                      <span className="font-semibold text-green-600 text-sm md:text-base">+{careerReadiness.currentSkills.length} gained</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">💼 Job Match</span>
-                      <span className="font-semibold text-purple-600">{Math.round(careerReadiness.readinessScore)}%</span>
+                      <span className="text-gray-600 text-sm md:text-base">💼 Job Match</span>
+                      <span className="font-semibold text-purple-600 text-sm md:text-base">{Math.round(careerReadiness.readinessScore)}%</span>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Career Insights Panel */}
-              <div className="bg-gradient-to-br from-green-50 to-blue-50 rounded-xl shadow-lg p-6 border border-green-200">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+              {/* Career Insights Panel - Mobile Responsive */}
+              <div className="bg-gradient-to-br from-green-50 to-blue-50 rounded-xl shadow-lg p-4 md:p-6 border border-green-200">
+                <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-4 flex items-center">
                   <span className="mr-2">💼</span>
                   Career Insights
                 </h3>
 
-                <div className="space-y-4">
+                <div className="space-y-3 md:space-y-4">
                   {/* Job Readiness Score */}
-                  <div className="bg-white rounded-lg p-4">
+                  <div className="bg-white rounded-lg p-3 md:p-4">
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm font-medium text-gray-700">Job Readiness</span>
-                      <span className="text-lg font-bold text-green-600">{careerReadiness.readinessScore}%</span>
+                      <span className="text-xs md:text-sm font-medium text-gray-700">Job Readiness</span>
+                      <span className="text-base md:text-lg font-bold text-green-600">{careerReadiness.readinessScore}%</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
@@ -1594,13 +1490,13 @@ const StudyCalendarApp = () => {
                   </div>
 
                   {/* Skills Acquired */}
-                  <div className="bg-white rounded-lg p-4">
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">✅ Skills You Have</h4>
+                  <div className="bg-white rounded-lg p-3 md:p-4">
+                    <h4 className="text-xs md:text-sm font-medium text-gray-700 mb-2">✅ Skills You Have</h4>
                     <div className="space-y-2">
                       {careerReadiness.currentSkills.slice(0, 3).map(([skill, level]) => {
                         const skillData = careerReadiness.marketData.topSkills.find(s => s.name === skill);
                         return (
-                          <div key={skill} className="flex justify-between text-sm">
+                          <div key={skill} className="flex justify-between text-xs md:text-sm">
                             <span className="text-gray-700">{skill} ({level})</span>
                             <span className="text-green-600 font-medium">
                               {skillData ? `${skillData.demand}%` : 'N/A'}
@@ -1613,9 +1509,9 @@ const StudyCalendarApp = () => {
 
                   {/* Next Priority */}
                   {careerReadiness.nextPrioritySkill && (
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                      <h4 className="text-sm font-medium text-gray-700 mb-2">🎯 Focus Next</h4>
-                      <div className="text-sm">
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 md:p-4">
+                      <h4 className="text-xs md:text-sm font-medium text-gray-700 mb-2">🎯 Focus Next</h4>
+                      <div className="text-xs md:text-sm">
                         <div className="font-medium text-yellow-800">
                           {careerReadiness.nextPrioritySkill.name}
                         </div>
@@ -1627,8 +1523,8 @@ const StudyCalendarApp = () => {
                   )}
 
                   {/* Market Stats */}
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">📊 Market Data</h4>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 md:p-4">
+                    <h4 className="text-xs md:text-sm font-medium text-gray-700 mb-2">📊 Market Data</h4>
                     <div className="space-y-1 text-xs text-gray-600">
                       <div>💼 {careerReadiness.marketData.totalJobs.toLocaleString()} Data Analyst jobs</div>
                       <div>💰 ${careerReadiness.marketData.averageSalary.toLocaleString()} avg salary</div>
@@ -1639,62 +1535,62 @@ const StudyCalendarApp = () => {
               </div>
             </div>
 
-            {/* Main Schedule */}
-            <div className="lg:col-span-3">
+            {/* Main Schedule - Mobile Responsive */}
+            <div className="lg:col-span-3 order-1 lg:order-2">
               <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-                <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6">
-                  <div className="flex items-center justify-between">
+                <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 md:p-6">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-2 md:space-y-0">
                     <div>
-                      <h2 className="text-2xl font-semibold flex items-center">
-                        <span className="mr-3">📋</span>
+                      <h2 className="text-lg md:text-2xl font-semibold flex items-center">
+                        <span className="mr-2 md:mr-3">📋</span>
                         Week {stats.currentWeek} Schedule
                       </h2>
-                      <p className="text-blue-100 mt-1">
+                      <p className="text-blue-100 mt-1 text-sm md:text-base">
                         {studySchedule[0]?.module} • {getWeekStatus()}
                       </p>
                     </div>
-                    <div className="text-right">
-                      <div className="text-3xl font-bold">{stats.weekProgress}%</div>
-                      <div className="text-blue-100 text-sm">Complete</div>
+                    <div className="text-center md:text-right">
+                      <div className="text-2xl md:text-3xl font-bold">{stats.weekProgress}%</div>
+                      <div className="text-blue-100 text-xs md:text-sm">Complete</div>
                     </div>
                   </div>
                 </div>
 
                 <div className="divide-y divide-gray-100">
                   {studySchedule.map((day) => (
-                    <div key={day.id} className={`p-6 transition-all ${
+                    <div key={day.id} className={`p-4 md:p-6 transition-all ${
                       day.dayCompleted ? 'bg-green-50' : 'hover:bg-gray-50'
                     }`}>
-                      {/* Day Header */}
+                      {/* Day Header - Mobile Responsive */}
                       <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center space-x-4">
-                          <div className="w-8 h-8 flex items-center justify-center">
+                        <div className="flex items-center space-x-3 md:space-x-4">
+                          <div className="w-6 h-6 md:w-8 md:h-8 flex items-center justify-center">
                             {day.dayCompleted ?
-                              <span className="text-green-600 text-2xl">✅</span> :
-                              <span className="text-gray-400 text-2xl">📅</span>
+                              <span className="text-green-600 text-lg md:text-2xl">✅</span> :
+                              <span className="text-gray-400 text-lg md:text-2xl">📅</span>
                             }
                           </div>
                           <div>
-                            <h3 className="text-xl font-semibold text-gray-800">
+                            <h3 className="text-base md:text-xl font-semibold text-gray-800">
                               {day.date} ({day.day})
                             </h3>
                             <div className="flex items-center space-x-2">
-                              <span className={`inline-block w-3 h-3 rounded-full ${day.moduleColor}`}></span>
-                              <p className="text-sm text-blue-600 font-medium">{day.module}</p>
+                              <span className={`inline-block w-2 h-2 md:w-3 md:h-3 rounded-full ${day.moduleColor}`}></span>
+                              <p className="text-xs md:text-sm text-blue-600 font-medium">{day.module}</p>
                             </div>
                           </div>
                         </div>
-                        {day.dayCompleted && <span className="text-3xl">🏆</span>}
+                        {day.dayCompleted && <span className="text-2xl md:text-3xl">🏆</span>}
                       </div>
 
-                      {/* Sessions */}
+                      {/* Sessions - Mobile Responsive */}
                       {day.module === 'Rest Day' ? (
-                        <div className="text-center py-8 text-gray-500 italic">
-                          <span className="text-4xl mb-2 block">🌟</span>
+                        <div className="text-center py-6 md:py-8 text-gray-500 italic">
+                          <span className="text-3xl md:text-4xl mb-2 block">🌟</span>
                           Well-deserved rest day!
                         </div>
                       ) : (
-                        <div className="space-y-4">
+                        <div className="space-y-3 md:space-y-4">
                           {/* Morning Session */}
                           {day.morningSession && (
                             <div className={`border rounded-lg transition-all ${
@@ -1702,27 +1598,27 @@ const StudyCalendarApp = () => {
                                 ? 'bg-green-50 border-green-200'
                                 : 'bg-orange-50 border-orange-200 hover:border-orange-300'
                             }`}>
-                              <div className="p-4">
-                                <div className="flex items-center space-x-4">
+                              <div className="p-3 md:p-4">
+                                <div className="flex items-center space-x-3 md:space-x-4">
                                   <button
                                     onClick={() => toggleSession(day.id, 'morning')}
-                                    className="transition-colors"
+                                    className="transition-colors flex-shrink-0"
                                   >
                                     {day.morningSession.completed ?
-                                      <span className="text-green-600 text-xl">✅</span> :
-                                      <span className="text-gray-400 text-xl hover:text-green-600">⬜</span>
+                                      <span className="text-green-600 text-lg md:text-xl">✅</span> :
+                                      <span className="text-gray-400 text-lg md:text-xl hover:text-green-600">⬜</span>
                                     }
                                   </button>
-                                  <div className="flex-1">
+                                  <div className="flex-1 min-w-0">
                                     <div className="flex items-center space-x-2">
-                                      <span className="text-orange-600 text-lg">🌅</span>
-                                      <span className="font-semibold text-orange-800">{day.morningSession.time}</span>
+                                      <span className="text-orange-600 text-base md:text-lg">🌅</span>
+                                      <span className="font-semibold text-orange-800 text-sm md:text-base">{day.morningSession.time}</span>
                                     </div>
-                                    <div className="text-gray-800 font-medium mt-1">
+                                    <div className="text-gray-800 font-medium mt-1 text-sm md:text-base">
                                       {day.morningSession.activity}
                                     </div>
                                     {day.morningSession.completed && (
-                                      <div className="mt-2 text-sm text-gray-600">
+                                      <div className="mt-2 text-xs md:text-sm text-gray-600">
                                         {day.morningSession.timeSpent > 0 && (
                                           <span>⏱️ {day.morningSession.timeSpent} min • </span>
                                         )}
@@ -1738,10 +1634,10 @@ const StudyCalendarApp = () => {
                                   {!day.morningSession.completed && (
                                     <button
                                       onClick={() => startTimer()}
-                                      className="text-orange-600 hover:text-orange-800 transition-colors"
+                                      className="text-orange-600 hover:text-orange-800 transition-colors flex-shrink-0"
                                       title="Start focus timer"
                                     >
-                                      <span className="text-2xl">⏰</span>
+                                      <span className="text-xl md:text-2xl">⏰</span>
                                     </button>
                                   )}
                                 </div>
@@ -1756,27 +1652,27 @@ const StudyCalendarApp = () => {
                                 ? 'bg-green-50 border-green-200'
                                 : 'bg-purple-50 border-purple-200 hover:border-purple-300'
                             }`}>
-                              <div className="p-4">
-                                <div className="flex items-center space-x-4">
+                              <div className="p-3 md:p-4">
+                                <div className="flex items-center space-x-3 md:space-x-4">
                                   <button
                                     onClick={() => toggleSession(day.id, 'evening')}
-                                    className="transition-colors"
+                                    className="transition-colors flex-shrink-0"
                                   >
                                     {day.eveningSession.completed ?
-                                      <span className="text-green-600 text-xl">✅</span> :
-                                      <span className="text-gray-400 text-xl hover:text-green-600">⬜</span>
+                                      <span className="text-green-600 text-lg md:text-xl">✅</span> :
+                                      <span className="text-gray-400 text-lg md:text-xl hover:text-green-600">⬜</span>
                                     }
                                   </button>
-                                  <div className="flex-1">
+                                  <div className="flex-1 min-w-0">
                                     <div className="flex items-center space-x-2">
-                                      <span className="text-purple-600 text-lg">🌙</span>
-                                      <span className="font-semibold text-purple-800">{day.eveningSession.time}</span>
+                                      <span className="text-purple-600 text-base md:text-lg">🌙</span>
+                                      <span className="font-semibold text-purple-800 text-sm md:text-base">{day.eveningSession.time}</span>
                                     </div>
-                                    <div className="text-gray-800 font-medium mt-1">
+                                    <div className="text-gray-800 font-medium mt-1 text-sm md:text-base">
                                       {day.eveningSession.activity}
                                     </div>
                                     {day.eveningSession.completed && (
-                                      <div className="mt-2 text-sm text-gray-600">
+                                      <div className="mt-2 text-xs md:text-sm text-gray-600">
                                         {day.eveningSession.timeSpent > 0 && (
                                           <span>⏱️ {day.eveningSession.timeSpent} min • </span>
                                         )}
@@ -1792,10 +1688,10 @@ const StudyCalendarApp = () => {
                                   {!day.eveningSession.completed && (
                                     <button
                                       onClick={() => startTimer()}
-                                      className="text-purple-600 hover:text-purple-800 transition-colors"
+                                      className="text-purple-600 hover:text-purple-800 transition-colors flex-shrink-0"
                                       title="Start focus timer"
                                     >
-                                      <span className="text-2xl">⏰</span>
+                                      <span className="text-xl md:text-2xl">⏰</span>
                                     </button>
                                   )}
                                 </div>
@@ -1808,17 +1704,17 @@ const StudyCalendarApp = () => {
                   ))}
                 </div>
 
-                {/* Week Completion Actions */}
+                {/* Week Completion Actions - Mobile Responsive */}
                 {stats.weekProgress >= 80 && (
-                  <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-6">
-                    <div className="flex items-center justify-between">
+                  <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 md:p-6">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-3 md:space-y-0">
                       <div>
-                        <h3 className="text-xl font-semibold">🎉 Week {stats.currentWeek} Nearly Complete!</h3>
-                        <p className="text-green-100">Ready to advance to next week?</p>
+                        <h3 className="text-lg md:text-xl font-semibold">🎉 Week {stats.currentWeek} Nearly Complete!</h3>
+                        <p className="text-green-100 text-sm md:text-base">Ready to advance to next week?</p>
                       </div>
                       <button
                         onClick={goToNextWeek}
-                        className="bg-white text-green-600 px-6 py-3 rounded-lg font-semibold hover:bg-green-50 transition-colors"
+                        className="bg-white text-green-600 px-4 md:px-6 py-2 md:py-3 rounded-lg font-semibold hover:bg-green-50 transition-colors text-sm md:text-base self-start md:self-auto"
                       >
                         Continue to Week {stats.currentWeek + 1} →
                       </button>
@@ -1833,26 +1729,26 @@ const StudyCalendarApp = () => {
           <CareerDashboard />
         )}
 
-        {/* Professional Session Notes Modal with Career Context */}
+        {/* Professional Session Notes Modal with Career Context - Mobile Responsive */}
         {showNotesModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-xl shadow-2xl p-8 w-full max-w-lg mx-4">
-              <h3 className="text-2xl font-semibold mb-2 flex items-center">
-                <span className="mr-3">🎯</span>
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-2xl p-4 md:p-8 w-full max-w-lg mx-auto max-h-[90vh] overflow-y-auto">
+              <h3 className="text-lg md:text-2xl font-semibold mb-2 flex items-center">
+                <span className="mr-2 md:mr-3">🎯</span>
                 Session Complete!
               </h3>
 
-              {/* Career Impact Preview */}
-              <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-4 mb-6">
+              {/* Career Impact Preview - Mobile Responsive */}
+              <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-3 md:p-4 mb-4 md:mb-6">
                 <h4 className="text-sm font-semibold text-gray-800 mb-2">💼 Career Impact</h4>
-                <div className="space-y-1 text-sm">
+                <div className="space-y-1 text-xs md:text-sm">
                   <div className="text-green-700">✅ +3% job readiness improvement</div>
                   <div className="text-blue-700">📈 Progress toward {careerReadiness.nextPrioritySkill?.name || 'next skill'}</div>
                   <div className="text-purple-700">💰 Building ${careerReadiness.nextPrioritySkill?.salaryImpact.toLocaleString() || '10,000'}+ earning potential</div>
                 </div>
               </div>
 
-              <div className="space-y-6">
+              <div className="space-y-4 md:space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">
                     Study Technique Used
@@ -1880,7 +1776,7 @@ const StudyCalendarApp = () => {
                       <button
                         key={star}
                         onClick={() => setSessionDifficulty(star)}
-                        className="transition-colors text-3xl"
+                        className="transition-colors text-2xl md:text-3xl"
                       >
                         {star <= sessionDifficulty ? '⭐' : '☆'}
                       </button>
@@ -1905,16 +1801,16 @@ const StudyCalendarApp = () => {
                 </div>
               </div>
 
-              <div className="flex space-x-4 mt-8">
+              <div className="flex flex-col sm:flex-row gap-3 mt-6 md:mt-8">
                 <button
                   onClick={() => setShowNotesModal(false)}
-                  className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-4 md:px-6 py-2 md:py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={saveSessionNotes}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-lg hover:from-blue-700 hover:to-green-700 transition-colors font-semibold"
+                  className="flex-1 px-4 md:px-6 py-2 md:py-3 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-lg hover:from-blue-700 hover:to-green-700 transition-colors font-semibold"
                 >
                   Complete & Advance Career ✅
                 </button>
