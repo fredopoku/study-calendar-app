@@ -210,23 +210,8 @@ const StudyCalendarApp = () => {
     return resourceTypes.Course;
   };
 
-  // Career tracking and job market simulation
-  const [careerData, setCareerData] = useState(() => {
-    return {
-      targetRole: 'Data Analyst',
-      targetLocation: 'Remote/US',
-      currentSalary: 45000,
-      targetSalary: 68500,
-      skillsAcquired: [],
-      jobApplications: 0,
-      interviewsScheduled: 0,
-      portfolioProjects: 0
-    };
-  });
-
-  // Job market data simulation (in real app, this would come from APIs)
+  // Job market data simulation
   const getJobMarketData = () => {
-    // Simulate real-time job market data
     const baseJobs = 2847;
     const variation = Math.floor(Math.random() * 200) - 100;
     const currentJobs = baseJobs + variation;
@@ -234,7 +219,7 @@ const StudyCalendarApp = () => {
     return {
       totalJobs: currentJobs,
       averageSalary: 68500,
-      salaryGrowth: 18.5, // % increase year over year
+      salaryGrowth: 18.5,
       topSkills: [
         { name: 'SQL', demand: 92, salaryImpact: 15000 },
         { name: 'Tableau', demand: 85, salaryImpact: 12000 },
@@ -248,80 +233,6 @@ const StudyCalendarApp = () => {
     };
   };
 
-  // Calculate career readiness based on study progress
-  const calculateCareerReadiness = () => {
-    const marketData = getJobMarketData();
-    const completedSessions = studySchedule.filter(day =>
-      (day.morningSession?.completed || false) || (day.eveningSession?.completed || false)
-    ).length;
-
-    // Map study progress to skills acquired
-    const skillsMap = {
-      'SQL': completedSessions >= 4 ? 'Intermediate' : completedSessions >= 2 ? 'Beginner' : 'None',
-      'Excel': completedSessions >= 2 ? 'Advanced' : completedSessions >= 1 ? 'Intermediate' : 'Beginner',
-      'Tableau': completedSessions >= 6 ? 'Intermediate' : completedSessions >= 4 ? 'Beginner' : 'None',
-      'Statistics': completedSessions >= 5 ? 'Intermediate' : completedSessions >= 3 ? 'Beginner' : 'None',
-      'Data Visualization': completedSessions >= 4 ? 'Intermediate' : completedSessions >= 2 ? 'Beginner' : 'None',
-      'Python': settings.currentWeek >= 8 ? 'Beginner' : 'None',
-      'R Programming': settings.currentWeek >= 12 ? 'Beginner' : 'None',
-      'Power BI': settings.currentWeek >= 10 ? 'Beginner' : 'None'
-    };
-
-    // Calculate job readiness score
-    let readinessScore = 0;
-    let matchedJobs = 0;
-    let potentialSalaryIncrease = 0;
-
-    marketData.topSkills.forEach(skill => {
-      const userLevel = skillsMap[skill.name];
-      if (userLevel === 'Advanced') {
-        readinessScore += skill.demand * 1.0;
-        potentialSalaryIncrease += skill.salaryImpact;
-      } else if (userLevel === 'Intermediate') {
-        readinessScore += skill.demand * 0.7;
-        potentialSalaryIncrease += skill.salaryImpact * 0.7;
-      } else if (userLevel === 'Beginner') {
-        readinessScore += skill.demand * 0.4;
-        potentialSalaryIncrease += skill.salaryImpact * 0.4;
-      }
-    });
-
-    // Normalize readiness score to percentage
-    const maxPossibleScore = marketData.topSkills.reduce((sum, skill) => sum + skill.demand, 0);
-    readinessScore = Math.min(Math.round((readinessScore / maxPossibleScore) * 100), 100);
-
-    // Calculate jobs that match current skill level
-    matchedJobs = Math.floor(marketData.totalJobs * (readinessScore / 100) * 0.6); // 60% of jobs at readiness level
-
-    // Identify next priority skill
-    const missingSkills = marketData.topSkills.filter(skill =>
-      skillsMap[skill.name] === 'None' || skillsMap[skill.name] === 'Beginner'
-    ).sort((a, b) => (b.demand * b.salaryImpact) - (a.demand * a.salaryImpact));
-
-    return {
-      readinessScore,
-      matchedJobs,
-      potentialSalaryIncrease: Math.round(potentialSalaryIncrease),
-      currentSkills: Object.entries(skillsMap).filter(([_, level]) => level !== 'None'),
-      nextPrioritySkill: missingSkills[0],
-      skillsMap,
-      marketData
-    };
-  };
-
-  // Career readiness state
-  const [careerReadiness, setCareerReadiness] = useState(() => {
-    return {
-      readinessScore: 15,
-      matchedJobs: 342,
-      potentialSalaryIncrease: 8500,
-      currentSkills: [['Excel', 'Beginner']],
-      nextPrioritySkill: { name: 'SQL', demand: 92, salaryImpact: 15000 },
-      skillsMap: {},
-      marketData: getJobMarketData()
-    };
-  });
-
   const studyTechniques = {
     'active-learning': { name: 'Active Learning', icon: '🧠', description: 'Engage with material through practice' },
     'spaced-repetition': { name: 'Spaced Repetition', icon: '🔄', description: 'Review at increasing intervals' },
@@ -334,320 +245,227 @@ const StudyCalendarApp = () => {
   };
 
   // Load or initialize settings
-  const [settings, setSettings] = useState(() => {
-    return {
-      startDate: new Date().toISOString().split('T')[0],
-      currentWeek: 0,
-      studyGoal: 'Google Data Analytics Certificate',
-      studyHoursPerWeek: 15,
-      completedWeeks: []
-    };
+  const [settings, setSettings] = useState({
+    startDate: new Date().toISOString().split('T')[0],
+    currentWeek: 0,
+    studyGoal: 'Google Data Analytics Certificate',
+    studyHoursPerWeek: 15,
+    completedWeeks: []
   });
 
-  // Generate current week schedule
-  const [studySchedule, setStudySchedule] = useState(() => {
-    return generateWeekSchedule(settings.currentWeek);
-  });
-
-  // App state
+  // All state variables
+  const [studySchedule, setStudySchedule] = useState([]);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-
-  const [currentTime, setCurrentTime] = useState(new Date());
   const [timerActive, setTimerActive] = useState(false);
   const [timerPaused, setTimerPaused] = useState(false);
   const [timeLeft, setTimeLeft] = useState(25 * 60);
   const [isBreakTime, setIsBreakTime] = useState(false);
   const [pomodoroCount, setPomodoroCount] = useState(0);
-
-  // Session management
   const [showNotesModal, setShowNotesModal] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
   const [sessionNotes, setSessionNotes] = useState('');
   const [sessionDifficulty, setSessionDifficulty] = useState(0);
   const [selectedTechnique, setSelectedTechnique] = useState('');
-
-  // Week navigation
   const [showWeekSelector, setShowWeekSelector] = useState(false);
+  const [activeTab, setActiveTab] = useState('schedule');
 
-  // Phase 2: Career Dashboard State
-  const [activeTab, setActiveTab] = useState('schedule'); // 'schedule' or 'career'
-  const [showCareerDashboard, setShowCareerDashboard] = useState(false);
+  // State for computed values
+  const [stats, setStats] = useState({
+    completedSessions: 0,
+    totalSessions: 0,
+    completedDays: 0,
+    totalStudyTime: 0,
+    currentStreak: 0,
+    weekProgress: 0,
+    overallProgress: 0,
+    currentWeek: 1,
+    totalWeeks: 16
+  });
+
+  const [careerReadiness, setCareerReadiness] = useState({
+    readinessScore: 15,
+    matchedJobs: 342,
+    potentialSalaryIncrease: 8500,
+    currentSkills: [['Excel', 'Beginner']],
+    nextPrioritySkill: { name: 'SQL', demand: 92, salaryImpact: 15000 },
+    skillsMap: {},
+    marketData: getJobMarketData()
+  });
 
   // Portfolio Projects Management
-  const [portfolioProjects, setPortfolioProjects] = useState(() => {
-    return [
-      {
-        id: 1,
-        title: 'Customer Churn Analysis',
-        description: 'Analyze customer retention patterns using SQL and Tableau',
-        status: 'not-started', // 'not-started', 'in-progress', 'completed'
-        weekUnlocked: 4,
-        skills: ['SQL', 'Tableau', 'Data Analysis'],
-        estimatedHours: 15,
-        actualHours: 0,
-        githubUrl: '',
-        liveUrl: '',
-        completedDate: null,
-        difficulty: 3
-      },
-      {
-        id: 2,
-        title: 'Sales Performance Dashboard',
-        description: 'Build interactive dashboard tracking KPIs and trends',
-        status: 'not-started',
-        weekUnlocked: 8,
-        skills: ['Tableau', 'Excel', 'Data Visualization'],
-        estimatedHours: 20,
-        actualHours: 0,
-        githubUrl: '',
-        liveUrl: '',
-        completedDate: null,
-        difficulty: 4
-      },
-      {
-        id: 3,
-        title: 'A/B Testing Analysis',
-        description: 'Statistical analysis of marketing campaign effectiveness',
-        status: 'not-started',
-        weekUnlocked: 12,
-        skills: ['Statistics', 'R Programming', 'Hypothesis Testing'],
-        estimatedHours: 25,
-        actualHours: 0,
-        githubUrl: '',
-        liveUrl: '',
-        completedDate: null,
-        difficulty: 5
-      }
-    ];
-  });
+  const [portfolioProjects, setPortfolioProjects] = useState([
+    {
+      id: 1,
+      title: 'Customer Churn Analysis',
+      description: 'Analyze customer retention patterns using SQL and Tableau',
+      status: 'not-started',
+      weekUnlocked: 4,
+      skills: ['SQL', 'Tableau', 'Data Analysis'],
+      estimatedHours: 15,
+      actualHours: 0,
+      githubUrl: '',
+      liveUrl: '',
+      completedDate: null,
+      difficulty: 3
+    },
+    {
+      id: 2,
+      title: 'Sales Performance Dashboard',
+      description: 'Build interactive dashboard tracking KPIs and trends',
+      status: 'not-started',
+      weekUnlocked: 8,
+      skills: ['Tableau', 'Excel', 'Data Visualization'],
+      estimatedHours: 20,
+      actualHours: 0,
+      githubUrl: '',
+      liveUrl: '',
+      completedDate: null,
+      difficulty: 4
+    },
+    {
+      id: 3,
+      title: 'A/B Testing Analysis',
+      description: 'Statistical analysis of marketing campaign effectiveness',
+      status: 'not-started',
+      weekUnlocked: 12,
+      skills: ['Statistics', 'R Programming', 'Hypothesis Testing'],
+      estimatedHours: 25,
+      actualHours: 0,
+      githubUrl: '',
+      liveUrl: '',
+      completedDate: null,
+      difficulty: 5
+    }
+  ]);
 
-  // Job Applications Tracking
   const [jobApplications, setJobApplications] = useState([]);
 
-  // Interview Preparation
-  const [interviewPrep, setInterviewPrep] = useState(() => {
-    return {
-      commonQuestions: [
-        { question: "Tell me about yourself", practiced: false, notes: '' },
-        { question: "Why do you want to be a data analyst?", practiced: false, notes: '' },
-        { question: "Describe your experience with SQL", practiced: false, notes: '' },
-        { question: "How do you handle missing data?", practiced: false, notes: '' },
-        { question: "Walk me through a data analysis project", practiced: false, notes: '' }
-      ],
-      technicalQuestions: [
-        { question: "What's the difference between a left and inner join?", practiced: false, notes: '' },
-        { question: "How would you identify outliers in a dataset?", practiced: false, notes: '' },
-        { question: "Explain the difference between correlation and causation", practiced: false, notes: '' }
-      ],
-      behavioralQuestions: [
-        { question: "Describe a time you had to analyze complex data", practiced: false, notes: '' },
-        { question: "How do you prioritize multiple projects?", practiced: false, notes: '' }
-      ]
-    };
+  const [interviewPrep, setInterviewPrep] = useState({
+    commonQuestions: [
+      { question: "Tell me about yourself", practiced: false, notes: '' },
+      { question: "Why do you want to be a data analyst?", practiced: false, notes: '' },
+      { question: "Describe your experience with SQL", practiced: false, notes: '' },
+      { question: "How do you handle missing data?", practiced: false, notes: '' },
+      { question: "Walk me through a data analysis project", practiced: false, notes: '' }
+    ],
+    technicalQuestions: [
+      { question: "What's the difference between a left and inner join?", practiced: false, notes: '' },
+      { question: "How would you identify outliers in a dataset?", practiced: false, notes: '' },
+      { question: "Explain the difference between correlation and causation", practiced: false, notes: '' }
+    ],
+    behavioralQuestions: [
+      { question: "Describe a time you had to analyze complex data", practiced: false, notes: '' },
+      { question: "How do you prioritize multiple projects?", practiced: false, notes: '' }
+    ]
   });
 
-  // Professional Network
-  const [professionalNetwork, setProfessionalNetwork] = useState(() => {
-    return {
-      linkedinConnections: 0,
-      industryEvents: 0,
-      mentorships: 0,
-      dataCommunitiesMember: []
-    };
-  });
+  const professionalNetwork = {
+    linkedinConnections: 0,
+    industryEvents: 0,
+    mentorships: 0,
+    dataCommunitiesMember: []
+  };
 
-  // Update career readiness when study progress changes
+  // Initialize study schedule on mount
   useEffect(() => {
-    setCareerReadiness(calculateCareerReadiness());
+    setStudySchedule(generateWeekSchedule(settings.currentWeek));
+  }, [settings.currentWeek]);
+
+  // Calculate stats when schedule changes
+  useEffect(() => {
+    if (studySchedule.length > 0) {
+      const completedSessions = studySchedule.filter(day =>
+        (day.morningSession?.completed || false) || (day.eveningSession?.completed || false)
+      ).length;
+
+      const totalSessions = studySchedule.filter(day =>
+        day.morningSession || day.eveningSession
+      ).length;
+
+      const completedDays = studySchedule.filter(day => day.dayCompleted).length;
+      const totalStudyTime = studySchedule.reduce((total, day) => {
+        const morningTime = day.morningSession?.timeSpent || 0;
+        const eveningTime = day.eveningSession?.timeSpent || 0;
+        return total + morningTime + eveningTime;
+      }, 0);
+
+      const currentStreak = settings.completedWeeks.length + (completedDays >= 5 ? 1 : 0);
+      const weekProgress = totalSessions > 0 ? Math.round((completedSessions / totalSessions) * 100) : 0;
+      const overallProgress = Math.round(((settings.completedWeeks.length * 2) + completedSessions) / (courseModules.reduce((sum, m) => sum + m.weeks, 0) * 10) * 100);
+
+      setStats({
+        completedSessions,
+        totalSessions,
+        completedDays,
+        totalStudyTime,
+        currentStreak,
+        weekProgress,
+        overallProgress,
+        currentWeek: settings.currentWeek + 1,
+        totalWeeks: courseModules.reduce((sum, m) => sum + m.weeks, 0)
+      });
+    }
+  }, [studySchedule, settings.currentWeek, settings.completedWeeks]);
+
+  // Calculate career readiness when schedule or settings change
+  useEffect(() => {
+    if (studySchedule.length > 0) {
+      const marketData = getJobMarketData();
+      const completedSessions = studySchedule.filter(day =>
+        (day.morningSession?.completed || false) || (day.eveningSession?.completed || false)
+      ).length;
+
+      const skillsMap = {
+        'SQL': completedSessions >= 4 ? 'Intermediate' : completedSessions >= 2 ? 'Beginner' : 'None',
+        'Excel': completedSessions >= 2 ? 'Advanced' : completedSessions >= 1 ? 'Intermediate' : 'Beginner',
+        'Tableau': completedSessions >= 6 ? 'Intermediate' : completedSessions >= 4 ? 'Beginner' : 'None',
+        'Statistics': completedSessions >= 5 ? 'Intermediate' : completedSessions >= 3 ? 'Beginner' : 'None',
+        'Data Visualization': completedSessions >= 4 ? 'Intermediate' : completedSessions >= 2 ? 'Beginner' : 'None',
+        'Python': settings.currentWeek >= 8 ? 'Beginner' : 'None',
+        'R Programming': settings.currentWeek >= 12 ? 'Beginner' : 'None',
+        'Power BI': settings.currentWeek >= 10 ? 'Beginner' : 'None'
+      };
+
+      let readinessScore = 0;
+      let potentialSalaryIncrease = 0;
+
+      marketData.topSkills.forEach(skill => {
+        const userLevel = skillsMap[skill.name];
+        if (userLevel === 'Advanced') {
+          readinessScore += skill.demand * 1.0;
+          potentialSalaryIncrease += skill.salaryImpact;
+        } else if (userLevel === 'Intermediate') {
+          readinessScore += skill.demand * 0.7;
+          potentialSalaryIncrease += skill.salaryImpact * 0.7;
+        } else if (userLevel === 'Beginner') {
+          readinessScore += skill.demand * 0.4;
+          potentialSalaryIncrease += skill.salaryImpact * 0.4;
+        }
+      });
+
+      const maxPossibleScore = marketData.topSkills.reduce((sum, skill) => sum + skill.demand, 0);
+      readinessScore = Math.min(Math.round((readinessScore / maxPossibleScore) * 100), 100);
+      const matchedJobs = Math.floor(marketData.totalJobs * (readinessScore / 100) * 0.6);
+
+      const missingSkills = marketData.topSkills.filter(skill =>
+        skillsMap[skill.name] === 'None' || skillsMap[skill.name] === 'Beginner'
+      ).sort((a, b) => (b.demand * b.salaryImpact) - (a.demand * a.salaryImpact));
+
+      setCareerReadiness({
+        readinessScore,
+        matchedJobs,
+        potentialSalaryIncrease: Math.round(potentialSalaryIncrease),
+        currentSkills: Object.entries(skillsMap).filter(([_, level]) => level !== 'None'),
+        nextPrioritySkill: missingSkills[0],
+        skillsMap,
+        marketData
+      });
+    }
   }, [studySchedule, settings.currentWeek]);
-
-  // Phase 2: AI-Powered Career Recommendations
-  const generateAIRecommendations = () => {
-    const completedSessions = studySchedule.filter(day =>
-      (day.morningSession?.completed || false) || (day.eveningSession?.completed || false)
-    ).length;
-
-    const weekProgress = stats.weekProgress;
-    const currentWeek = settings.currentWeek;
-    const readinessScore = careerReadiness.readinessScore;
-    const completedProjects = portfolioProjects.filter(p => p.status === 'completed').length;
-
-    const recommendations = [];
-
-    // Study Performance Analysis
-    if (weekProgress < 50 && currentWeek > 2) {
-      recommendations.push({
-        type: 'study',
-        priority: 'high',
-        title: 'Boost Study Consistency',
-        description: `You're at ${weekProgress}% completion this week. Consider breaking sessions into smaller chunks and using the Pomodoro timer more frequently.`,
-        action: 'Use 25-min focused sessions',
-        impact: 'Improve retention by 40%'
-      });
-    }
-
-    // Career Readiness Optimization
-    if (readinessScore < 30) {
-      recommendations.push({
-        type: 'skill',
-        priority: 'high',
-        title: 'Focus on High-Impact Skills',
-        description: `Your job readiness is at ${readinessScore}%. Prioritize SQL and Excel mastery for immediate market impact.`,
-        action: 'Complete SQL fundamentals',
-        impact: '+15% job readiness'
-      });
-    }
-
-    // Portfolio Development
-    if (currentWeek >= 4 && completedProjects === 0) {
-      recommendations.push({
-        type: 'portfolio',
-        priority: 'medium',
-        title: 'Start Portfolio Project',
-        description: 'You\'re ready to begin hands-on projects. Start with Customer Churn Analysis to demonstrate SQL skills.',
-        action: 'Begin first project',
-        impact: '+25% interview callbacks'
-      });
-    }
-
-    // Job Application Timing
-    if (readinessScore >= 60 && jobApplications.length === 0) {
-      recommendations.push({
-        type: 'application',
-        priority: 'medium',
-        title: 'Begin Job Applications',
-        description: `At ${readinessScore}% readiness, you're competitive for entry-level positions. Start applying to build interview experience.`,
-        action: 'Apply to 5 junior roles',
-        impact: 'Gain market feedback'
-      });
-    }
-
-    // Networking Recommendations
-    if (professionalNetwork.linkedinConnections < 50) {
-      recommendations.push({
-        type: 'network',
-        priority: 'low',
-        title: 'Expand Professional Network',
-        description: 'Connect with data professionals and join analytics communities to discover opportunities.',
-        action: 'Join 3 data communities',
-        impact: '60% of jobs come from networking'
-      });
-    }
-
-    // Interview Preparation
-    const practicedQuestions = interviewPrep.commonQuestions.filter(q => q.practiced).length;
-    if (readinessScore >= 40 && practicedQuestions < 3) {
-      recommendations.push({
-        type: 'interview',
-        priority: 'medium',
-        title: 'Practice Interview Questions',
-        description: 'Prepare for technical and behavioral questions to increase confidence.',
-        action: 'Practice 5 questions weekly',
-        impact: '+30% interview success'
-      });
-    }
-
-    return recommendations.sort((a, b) => {
-      const priorityOrder = { high: 3, medium: 2, low: 1 };
-      return priorityOrder[b.priority] - priorityOrder[a.priority];
-    });
-  };
-
-  // Enhanced Job Market Analysis
-  const getDetailedJobMarketData = () => {
-    const baseData = getJobMarketData();
-
-    // Simulate location-based data
-    const locationData = {
-      'Remote/US': { multiplier: 1.0, competition: 'High', salaryBonus: 5000 },
-      'San Francisco': { multiplier: 1.4, competition: 'Very High', salaryBonus: 25000 },
-      'New York': { multiplier: 1.3, competition: 'Very High', salaryBonus: 20000 },
-      'Austin': { multiplier: 1.1, competition: 'Medium', salaryBonus: 8000 },
-      'Denver': { multiplier: 1.05, competition: 'Medium', salaryBonus: 5000 },
-      'Chicago': { multiplier: 1.15, competition: 'High', salaryBonus: 12000 }
-    };
-
-    // Industry breakdown
-    const industryData = [
-      { name: 'Technology', percentage: 35, avgSalary: 75000, growth: 22 },
-      { name: 'Finance', percentage: 25, avgSalary: 78000, growth: 18 },
-      { name: 'Healthcare', percentage: 15, avgSalary: 70000, growth: 25 },
-      { name: 'Retail/E-commerce', percentage: 12, avgSalary: 65000, growth: 20 },
-      { name: 'Consulting', percentage: 8, avgSalary: 80000, growth: 15 },
-      { name: 'Other', percentage: 5, avgSalary: 68000, growth: 12 }
-    ];
-
-    // Company size analysis
-    const companySizeData = [
-      { size: 'Startup (1-50)', percentage: 20, avgSalary: 68000, workLifeBalance: 3.2, learningOpportunity: 4.5 },
-      { size: 'Small (51-200)', percentage: 25, avgSalary: 70000, workLifeBalance: 3.8, learningOpportunity: 4.2 },
-      { size: 'Medium (201-1000)', percentage: 30, avgSalary: 72000, workLifeBalance: 3.6, learningOpportunity: 3.8 },
-      { size: 'Large (1000+)', percentage: 25, avgSalary: 75000, workLifeBalance: 3.4, learningOpportunity: 3.5 }
-    ];
-
-    // Salary progression forecast
-    const salaryProgression = [
-      { year: 0, title: 'Junior Data Analyst', salary: 55000 },
-      { year: 1, title: 'Data Analyst', salary: 68000 },
-      { year: 3, title: 'Senior Data Analyst', salary: 85000 },
-      { year: 5, title: 'Data Analytics Manager', salary: 105000 },
-      { year: 7, title: 'Senior Manager/Director', salary: 130000 }
-    ];
-
-    return {
-      ...baseData,
-      locationData,
-      industryData,
-      companySizeData,
-      salaryProgression,
-      marketTrends: {
-        remoteWork: 75, // % of remote positions
-        contractWork: 15, // % of contract positions
-        entryLevelDemand: 'High',
-        skillsGapOpportunity: 'Significant'
-      }
-    };
-  };
-
-  // Calculate study statistics
-  const calculateStats = () => {
-    const completedSessions = studySchedule.filter(day =>
-      (day.morningSession?.completed || false) || (day.eveningSession?.completed || false)
-    ).length;
-
-    const totalSessions = studySchedule.filter(day =>
-      day.morningSession || day.eveningSession
-    ).length;
-
-    const completedDays = studySchedule.filter(day => day.dayCompleted).length;
-    const totalStudyTime = studySchedule.reduce((total, day) => {
-      const morningTime = day.morningSession?.timeSpent || 0;
-      const eveningTime = day.eveningSession?.timeSpent || 0;
-      return total + morningTime + eveningTime;
-    }, 0);
-
-    const currentStreak = settings.completedWeeks.length + (completedDays >= 5 ? 1 : 0);
-    const weekProgress = Math.round((completedSessions / totalSessions) * 100);
-    const overallProgress = Math.round(((settings.completedWeeks.length * 2) + completedSessions) / (courseModules.reduce((sum, m) => sum + m.weeks, 0) * 10) * 100);
-
-    return {
-      completedSessions,
-      totalSessions,
-      completedDays,
-      totalStudyTime,
-      currentStreak,
-      weekProgress,
-      overallProgress,
-      currentWeek: settings.currentWeek + 1,
-      totalWeeks: courseModules.reduce((sum, m) => sum + m.weeks, 0)
-    };
-  };
-
-  const stats = calculateStats();
 
   // Week navigation functions
   const goToNextWeek = () => {
-    if (stats.weekProgress >= 80) { // Allow advancement if 80% complete
+    if (stats.weekProgress >= 80) {
       const newWeek = settings.currentWeek + 1;
       const newSettings = {
         ...settings,
@@ -655,7 +473,6 @@ const StudyCalendarApp = () => {
         completedWeeks: [...settings.completedWeeks, settings.currentWeek]
       };
       setSettings(newSettings);
-      setStudySchedule(generateWeekSchedule(newWeek));
     }
   };
 
@@ -663,13 +480,11 @@ const StudyCalendarApp = () => {
     if (settings.currentWeek > 0) {
       const newWeek = settings.currentWeek - 1;
       setSettings({ ...settings, currentWeek: newWeek });
-      setStudySchedule(generateWeekSchedule(newWeek));
     }
   };
 
   const jumpToWeek = (weekNumber) => {
     setSettings({ ...settings, currentWeek: weekNumber });
-    setStudySchedule(generateWeekSchedule(weekNumber));
     setShowWeekSelector(false);
   };
 
@@ -716,10 +531,9 @@ const StudyCalendarApp = () => {
           notes: sessionNotes,
           difficulty: sessionDifficulty,
           technique: selectedTechnique,
-          timeSpent: Math.max(pomodoroCount * 25, 30) // Minimum 30 min
+          timeSpent: Math.max(pomodoroCount * 25, 30)
         };
 
-        // Check if day is complete
         const morningDone = !updatedDay.morningSession || updatedDay.morningSession.completed;
         const eveningDone = !updatedDay.eveningSession || updatedDay.eveningSession.completed;
         updatedDay.dayCompleted = morningDone && eveningDone;
@@ -816,10 +630,38 @@ const StudyCalendarApp = () => {
     return "Just Started";
   };
 
-  // Phase 2: Career Dashboard Component
+  // AI Recommendations
+  const generateAIRecommendations = () => {
+    const recommendations = [];
+
+    if (stats.weekProgress < 50 && settings.currentWeek > 2) {
+      recommendations.push({
+        type: 'study',
+        priority: 'high',
+        title: 'Boost Study Consistency',
+        description: `You're at ${stats.weekProgress}% completion this week. Consider breaking sessions into smaller chunks and using the Pomodoro timer more frequently.`,
+        action: 'Use 25-min focused sessions',
+        impact: 'Improve retention by 40%'
+      });
+    }
+
+    if (careerReadiness.readinessScore < 30) {
+      recommendations.push({
+        type: 'skill',
+        priority: 'high',
+        title: 'Focus on High-Impact Skills',
+        description: `Your job readiness is at ${careerReadiness.readinessScore}%. Prioritize SQL and Excel mastery for immediate market impact.`,
+        action: 'Complete SQL fundamentals',
+        impact: '+15% job readiness'
+      });
+    }
+
+    return recommendations;
+  };
+
+  // Career Dashboard Component
   const CareerDashboard = () => {
     const aiRecommendations = generateAIRecommendations();
-    const detailedMarketData = getDetailedJobMarketData();
 
     return (
       <div className="space-y-4 md:space-y-6">
@@ -852,320 +694,35 @@ const StudyCalendarApp = () => {
                       <span className="text-xs md:text-sm text-green-600">📈 {rec.impact}</span>
                     </div>
                   </div>
-                  <span className={`px-2 py-1 text-xs font-medium rounded self-start ${
-                    rec.priority === 'high' ? 'bg-red-100 text-red-800' :
-                    rec.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-green-100 text-green-800'
-                  }`}>
-                    {rec.priority.toUpperCase()}
-                  </span>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-          {/* Portfolio Projects */}
-          <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
-            <h3 className="text-lg md:text-xl font-semibold mb-4 flex items-center">
-              <span className="mr-2 md:mr-3">🎯</span>
-              Portfolio Projects
-            </h3>
-
-            <div className="space-y-3 md:space-y-4">
-              {portfolioProjects.map((project) => (
-                <div key={project.id} className={`border rounded-lg p-3 md:p-4 ${
-                  project.status === 'completed' ? 'bg-green-50 border-green-200' :
-                  project.status === 'in-progress' ? 'bg-blue-50 border-blue-200' :
-                  settings.currentWeek >= project.weekUnlocked ? 'bg-gray-50 border-gray-200' :
-                  'bg-gray-100 border-gray-300 opacity-50'
-                }`}>
-                  <div className="flex flex-col md:flex-row md:items-start justify-between space-y-3 md:space-y-0">
-                    <div className="flex-1">
-                      <h4 className="font-medium text-gray-800 text-sm md:text-base">{project.title}</h4>
-                      <p className="text-xs md:text-sm text-gray-600 mt-1">{project.description}</p>
-
-                      <div className="flex flex-wrap items-center gap-2 mt-2">
-                        <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded">
-                          {'⭐'.repeat(project.difficulty)} Difficulty
-                        </span>
-                        <span className="text-xs text-gray-600">
-                          {project.estimatedHours}h estimated
-                        </span>
-                        {settings.currentWeek < project.weekUnlocked && (
-                          <span className="text-xs text-orange-600">
-                            Unlocks Week {project.weekUnlocked}
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {project.skills.map((skill) => (
-                          <span key={skill} className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                            {skill}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="md:ml-4 self-start">
-                      {project.status === 'completed' && <span className="text-2xl">✅</span>}
-                      {project.status === 'in-progress' && <span className="text-2xl">🚧</span>}
-                      {project.status === 'not-started' && settings.currentWeek >= project.weekUnlocked &&
-                        <button
-                          onClick={() => {
-                            setPortfolioProjects(prev => prev.map(p =>
-                              p.id === project.id ? { ...p, status: 'in-progress' } : p
-                            ));
-                          }}
-                          className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-                        >
-                          Start
-                        </button>
-                      }
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Job Market Intelligence */}
-          <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
-            <h3 className="text-lg md:text-xl font-semibold mb-4 flex items-center">
-              <span className="mr-2 md:mr-3">📊</span>
-              Market Intelligence
-            </h3>
-
-            <div className="space-y-4">
-              {/* Industry Breakdown */}
-              <div>
-                <h4 className="font-medium text-gray-800 mb-2 text-sm md:text-base">Top Industries Hiring</h4>
-                <div className="space-y-2">
-                  {detailedMarketData.industryData.slice(0, 4).map((industry) => (
-                    <div key={industry.name} className="flex justify-between items-center">
-                      <span className="text-xs md:text-sm text-gray-700">{industry.name}</span>
-                      <div className="flex items-center space-x-2">
-                        <span className="text-xs md:text-sm font-medium text-green-600">
-                          ${industry.avgSalary.toLocaleString()}
-                        </span>
-                        <span className="text-xs text-gray-500">
-                          {industry.percentage}%
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Salary Progression */}
-              <div>
-                <h4 className="font-medium text-gray-800 mb-2 text-sm md:text-base">Career Path & Salary</h4>
-                <div className="space-y-2">
-                  {detailedMarketData.salaryProgression.slice(0, 3).map((step) => (
-                    <div key={step.year} className="flex justify-between items-center">
-                      <span className="text-xs md:text-sm text-gray-700">
-                        {step.year === 0 ? 'Entry' : `${step.year}y`} - {step.title}
-                      </span>
-                      <span className="text-xs md:text-sm font-medium text-blue-600">
-                        ${step.salary.toLocaleString()}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Market Trends */}
-              <div>
-                <h4 className="font-medium text-gray-800 mb-2 text-sm md:text-base">Market Trends</h4>
-                <div className="space-y-1 text-xs md:text-sm text-gray-600">
-                  <div>🏠 {detailedMarketData.marketTrends.remoteWork}% remote positions</div>
-                  <div>📈 {detailedMarketData.marketTrends.entryLevelDemand} entry-level demand</div>
-                  <div>🎯 {detailedMarketData.marketTrends.skillsGapOpportunity} opportunity gap</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-          {/* Job Applications Tracker */}
-          <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
-            <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4 space-y-2 md:space-y-0">
-              <h3 className="text-lg md:text-xl font-semibold flex items-center">
-                <span className="mr-2 md:mr-3">📝</span>
-                Job Applications
-              </h3>
-              <button
-                onClick={() => {
-                  const newApp = {
-                    id: Date.now(),
-                    company: 'New Company',
-                    position: 'Data Analyst',
-                    status: 'applied',
-                    appliedDate: new Date().toISOString().split('T')[0],
-                    salary: '65000-75000',
-                    notes: ''
-                  };
-                  setJobApplications(prev => [newApp, ...prev]);
-                }}
-                className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 self-start md:self-auto"
-              >
-                + Add Application
-              </button>
-            </div>
-
-            {jobApplications.length === 0 ? (
-              <div className="text-center py-6 md:py-8 text-gray-500">
-                <span className="text-3xl md:text-4xl block mb-2">🎯</span>
-                <p className="text-sm md:text-base">Ready to start applying?</p>
-                <p className="text-xs md:text-sm">Track your applications here</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {jobApplications.slice(0, 5).map((app) => (
-                  <div key={app.id} className="border rounded-lg p-3">
-                    <div className="flex flex-col md:flex-row md:justify-between md:items-start space-y-2 md:space-y-0">
-                      <div className="flex-1">
-                        <h4 className="font-medium text-gray-800 text-sm md:text-base">{app.position}</h4>
-                        <p className="text-xs md:text-sm text-gray-600">{app.company}</p>
-                        <p className="text-xs text-gray-500">Applied: {app.appliedDate}</p>
-                      </div>
-                      <span className={`px-2 py-1 text-xs rounded self-start ${
-                        app.status === 'interview' ? 'bg-blue-100 text-blue-800' :
-                        app.status === 'offered' ? 'bg-green-100 text-green-800' :
-                        app.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {app.status}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Interview Preparation */}
-          <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
-            <h3 className="text-lg md:text-xl font-semibold mb-4 flex items-center">
-              <span className="mr-2 md:mr-3">🎤</span>
-              Interview Prep
-            </h3>
-
-            <div className="space-y-4">
-              <div>
-                <h4 className="font-medium text-gray-800 mb-2 text-sm md:text-base">Common Questions</h4>
-                <div className="space-y-2">
-                  {interviewPrep.commonQuestions.slice(0, 3).map((q, index) => (
-                    <div key={index} className="flex items-center justify-between">
-                      <span className="text-xs md:text-sm text-gray-700 flex-1 pr-2">{q.question}</span>
-                      <button
-                        onClick={() => {
-                          setInterviewPrep(prev => ({
-                            ...prev,
-                            commonQuestions: prev.commonQuestions.map((question, i) =>
-                              i === index ? { ...question, practiced: !question.practiced } : question
-                            )
-                          }));
-                        }}
-                        className={`text-lg ${q.practiced ? 'text-green-600' : 'text-gray-400'}`}
-                      >
-                        {q.practiced ? '✅' : '⬜'}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <h4 className="font-medium text-gray-800 mb-2 text-sm md:text-base">Technical Skills</h4>
-                <div className="space-y-2">
-                  {interviewPrep.technicalQuestions.slice(0, 2).map((q, index) => (
-                    <div key={index} className="flex items-center justify-between">
-                      <span className="text-xs md:text-sm text-gray-700 flex-1 pr-2">{q.question}</span>
-                      <button
-                        onClick={() => {
-                          setInterviewPrep(prev => ({
-                            ...prev,
-                            technicalQuestions: prev.technicalQuestions.map((question, i) =>
-                              i === index ? { ...question, practiced: !question.practiced } : question
-                            )
-                          }));
-                        }}
-                        className={`text-lg ${q.practiced ? 'text-green-600' : 'text-gray-400'}`}
-                      >
-                        {q.practiced ? '✅' : '⬜'}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="pt-3 border-t">
-                <div className="text-xs md:text-sm text-gray-600">
-                  <div>📊 Progress: {Math.round((interviewPrep.commonQuestions.filter(q => q.practiced).length / interviewPrep.commonQuestions.length) * 100)}% practiced</div>
-                  <div className="mt-1">🎯 Recommendation: Practice 2-3 questions weekly</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Professional Network & Resources */}
+        {/* Portfolio Projects */}
         <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
           <h3 className="text-lg md:text-xl font-semibold mb-4 flex items-center">
-            <span className="mr-2 md:mr-3">🌐</span>
-            Professional Development
+            <span className="mr-2 md:mr-3">🎯</span>
+            Portfolio Projects
           </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-            <div>
-              <h4 className="font-medium text-gray-800 mb-3 text-sm md:text-base">Networking Progress</h4>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-xs md:text-sm text-gray-600">LinkedIn Connections</span>
-                  <span className="text-xs md:text-sm font-medium">{professionalNetwork.linkedinConnections}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-xs md:text-sm text-gray-600">Industry Events</span>
-                  <span className="text-xs md:text-sm font-medium">{professionalNetwork.industryEvents}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-xs md:text-sm text-gray-600">Data Communities</span>
-                  <span className="text-xs md:text-sm font-medium">{professionalNetwork.dataCommunitiesMember.length}</span>
+          <div className="space-y-3 md:space-y-4">
+            {portfolioProjects.map((project) => (
+              <div key={project.id} className={`border rounded-lg p-3 md:p-4 ${
+                project.status === 'completed' ? 'bg-green-50 border-green-200' :
+                project.status === 'in-progress' ? 'bg-blue-50 border-blue-200' :
+                settings.currentWeek >= project.weekUnlocked ? 'bg-gray-50 border-gray-200' :
+                'bg-gray-100 border-gray-300 opacity-50'
+              }`}>
+                <div className="flex flex-col md:flex-row md:items-start justify-between space-y-3 md:space-y-0">
+                  <div className="flex-1">
+                    <h4 className="font-medium text-gray-800 text-sm md:text-base">{project.title}</h4>
+                    <p className="text-xs md:text-sm text-gray-600 mt-1">{project.description}</p>
+                  </div>
                 </div>
               </div>
-            </div>
-
-            <div>
-              <h4 className="font-medium text-gray-800 mb-3 text-sm md:text-base">Recommended Communities</h4>
-              <div className="space-y-2 text-xs md:text-sm">
-                <div className="text-gray-700">• r/analytics (Reddit)</div>
-                <div className="text-gray-700">• Data Science Central</div>
-                <div className="text-gray-700">• Kaggle Learn</div>
-                <div className="text-gray-700">• Local Data Science Meetups</div>
-              </div>
-            </div>
-
-            <div>
-              <h4 className="font-medium text-gray-800 mb-3 text-sm md:text-base">Next Steps</h4>
-              <div className="space-y-2 text-xs md:text-sm">
-                <div className="flex items-center text-gray-700">
-                  <span className="mr-2">📱</span>
-                  <span>Update LinkedIn profile</span>
-                </div>
-                <div className="flex items-center text-gray-700">
-                  <span className="mr-2">🗣️</span>
-                  <span>Attend virtual meetup</span>
-                </div>
-                <div className="flex items-center text-gray-700">
-                  <span className="mr-2">💼</span>
-                  <span>Create GitHub portfolio</span>
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>
@@ -1175,9 +732,8 @@ const StudyCalendarApp = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-2 md:p-4">
       <div className="max-w-7xl mx-auto">
-        {/* Professional Header with Career Integration - Mobile Responsive */}
+        {/* Professional Header - Mobile Responsive */}
         <div className="bg-white rounded-xl shadow-lg p-4 md:p-6 mb-4 md:mb-6">
-          {/* Header Content - Stacked on Mobile */}
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
             <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
               <div className="p-2 md:p-3 bg-blue-600 rounded-lg self-start">
@@ -1195,7 +751,6 @@ const StudyCalendarApp = () => {
                     {getWeekStatus()}
                   </span>
                 </div>
-                {/* Career Status Integration - Responsive */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 mt-2 text-xs md:text-sm">
                   <div className="flex items-center space-x-1">
                     <span className="text-orange-600">🎯</span>
@@ -1210,15 +765,13 @@ const StudyCalendarApp = () => {
                   <div className="flex items-center space-x-1">
                     <span className="text-green-600">💰</span>
                     <span className="text-gray-700">Potential:</span>
-                    <span className="font-semibold text-green-600">+${(careerReadiness.potentialSalaryIncrease).toLocaleString()}</span>
+                    <span className="font-semibold text-green-600">+${careerReadiness.potentialSalaryIncrease.toLocaleString()}</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Stats Section - Responsive Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-3 md:gap-6">
-              {/* Study Streak */}
               <div className="text-center">
                 <div className="flex items-center justify-center space-x-1 text-lg md:text-2xl font-bold text-orange-600">
                   <span>🔥</span>
@@ -1227,7 +780,6 @@ const StudyCalendarApp = () => {
                 <div className="text-xs text-gray-600">Week Streak</div>
               </div>
 
-              {/* Career Readiness Score */}
               <div className="text-center">
                 <div className="flex items-center justify-center space-x-1 text-lg md:text-2xl font-bold text-green-600">
                   <span>🎯</span>
@@ -1236,7 +788,6 @@ const StudyCalendarApp = () => {
                 <div className="text-xs text-gray-600">Career Ready</div>
               </div>
 
-              {/* Notifications */}
               <div className="text-center">
                 <button
                   onClick={() => {
@@ -1259,7 +810,6 @@ const StudyCalendarApp = () => {
                 </button>
               </div>
 
-              {/* Progress Stats */}
               <div className="text-center">
                 <div className="text-lg md:text-2xl font-bold text-blue-600">{stats.weekProgress}%</div>
                 <div className="text-xs text-gray-600">Week Progress</div>
@@ -1267,7 +817,7 @@ const StudyCalendarApp = () => {
             </div>
           </div>
 
-          {/* Phase 2: Tab Navigation - Mobile Responsive */}
+          {/* Tab Navigation */}
           <div className="mt-4 md:mt-6 border-b border-gray-200 overflow-x-auto">
             <nav className="flex space-x-4 md:space-x-8 min-w-max">
               <button
@@ -1307,7 +857,7 @@ const StudyCalendarApp = () => {
             </div>
           </div>
 
-          {/* Week Navigation - Mobile Responsive */}
+          {/* Week Navigation */}
           <div className="mt-4 flex flex-col md:flex-row md:items-center md:justify-between space-y-3 md:space-y-0">
             <div className="flex flex-wrap items-center gap-2 md:gap-3">
               <button
@@ -1339,7 +889,7 @@ const StudyCalendarApp = () => {
             </p>
           </div>
 
-          {/* Week Selector - Mobile Responsive */}
+          {/* Week Selector */}
           {showWeekSelector && (
             <div className="mt-4 p-3 md:p-4 bg-gray-50 rounded-lg">
               <h3 className="text-base md:text-lg font-semibold mb-3">Jump to Week</h3>
@@ -1367,9 +917,9 @@ const StudyCalendarApp = () => {
         {/* Conditional Content Based on Active Tab */}
         {activeTab === 'schedule' ? (
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6">
-            {/* Focus Timer & Stats - Mobile Responsive */}
+            {/* Sidebar */}
             <div className="lg:col-span-1 order-2 lg:order-1 space-y-4 md:space-y-6">
-              {/* Professional Focus Timer */}
+              {/* Focus Timer */}
               <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
                 <h2 className="text-lg md:text-xl font-semibold mb-4 flex items-center">
                   <span className="mr-2">⏰</span>
@@ -1425,7 +975,7 @@ const StudyCalendarApp = () => {
                 </div>
               </div>
 
-              {/* Weekly Stats with Career Integration */}
+              {/* Weekly Stats */}
               <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
                 <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-4 flex items-center">
                   <span className="mr-2">📈</span>
@@ -1449,93 +999,11 @@ const StudyCalendarApp = () => {
                     <span className="text-gray-600 text-sm md:text-base">Progress</span>
                     <span className="font-semibold text-orange-600 text-sm md:text-base">{stats.weekProgress}%</span>
                   </div>
-
-                  {/* Career Progress Section */}
-                  <div className="pt-3 border-t border-gray-200">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600 text-sm md:text-base">🎯 Career Skills</span>
-                      <span className="font-semibold text-green-600 text-sm md:text-base">+{careerReadiness.currentSkills.length} gained</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600 text-sm md:text-base">💼 Job Match</span>
-                      <span className="font-semibold text-purple-600 text-sm md:text-base">{Math.round(careerReadiness.readinessScore)}%</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Career Insights Panel - Mobile Responsive */}
-              <div className="bg-gradient-to-br from-green-50 to-blue-50 rounded-xl shadow-lg p-4 md:p-6 border border-green-200">
-                <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                  <span className="mr-2">💼</span>
-                  Career Insights
-                </h3>
-
-                <div className="space-y-3 md:space-y-4">
-                  {/* Job Readiness Score */}
-                  <div className="bg-white rounded-lg p-3 md:p-4">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-xs md:text-sm font-medium text-gray-700">Job Readiness</span>
-                      <span className="text-base md:text-lg font-bold text-green-600">{careerReadiness.readinessScore}%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-gradient-to-r from-green-400 to-green-600 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${careerReadiness.readinessScore}%` }}
-                      ></div>
-                    </div>
-                    <p className="text-xs text-gray-600 mt-1">
-                      Ready for {careerReadiness.matchedJobs.toLocaleString()} jobs
-                    </p>
-                  </div>
-
-                  {/* Skills Acquired */}
-                  <div className="bg-white rounded-lg p-3 md:p-4">
-                    <h4 className="text-xs md:text-sm font-medium text-gray-700 mb-2">✅ Skills You Have</h4>
-                    <div className="space-y-2">
-                      {careerReadiness.currentSkills.slice(0, 3).map(([skill, level]) => {
-                        const skillData = careerReadiness.marketData.topSkills.find(s => s.name === skill);
-                        return (
-                          <div key={skill} className="flex justify-between text-xs md:text-sm">
-                            <span className="text-gray-700">{skill} ({level})</span>
-                            <span className="text-green-600 font-medium">
-                              {skillData ? `${skillData.demand}%` : 'N/A'}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Next Priority */}
-                  {careerReadiness.nextPrioritySkill && (
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 md:p-4">
-                      <h4 className="text-xs md:text-sm font-medium text-gray-700 mb-2">🎯 Focus Next</h4>
-                      <div className="text-xs md:text-sm">
-                        <div className="font-medium text-yellow-800">
-                          {careerReadiness.nextPrioritySkill.name}
-                        </div>
-                        <div className="text-yellow-700 text-xs mt-1">
-                          {careerReadiness.nextPrioritySkill.demand}% of jobs • +${careerReadiness.nextPrioritySkill.salaryImpact.toLocaleString()} potential
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Market Stats */}
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 md:p-4">
-                    <h4 className="text-xs md:text-sm font-medium text-gray-700 mb-2">📊 Market Data</h4>
-                    <div className="space-y-1 text-xs text-gray-600">
-                      <div>💼 {careerReadiness.marketData.totalJobs.toLocaleString()} Data Analyst jobs</div>
-                      <div>💰 ${careerReadiness.marketData.averageSalary.toLocaleString()} avg salary</div>
-                      <div>📈 +{careerReadiness.marketData.salaryGrowth}% growth this year</div>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Main Schedule - Mobile Responsive */}
+            {/* Main Schedule */}
             <div className="lg:col-span-3 order-1 lg:order-2">
               <div className="bg-white rounded-xl shadow-lg overflow-hidden">
                 <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 md:p-6">
@@ -1561,7 +1029,7 @@ const StudyCalendarApp = () => {
                     <div key={day.id} className={`p-4 md:p-6 transition-all ${
                       day.dayCompleted ? 'bg-green-50' : 'hover:bg-gray-50'
                     }`}>
-                      {/* Day Header - Mobile Responsive */}
+                      {/* Day Header */}
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center space-x-3 md:space-x-4">
                           <div className="w-6 h-6 md:w-8 md:h-8 flex items-center justify-center">
@@ -1583,7 +1051,7 @@ const StudyCalendarApp = () => {
                         {day.dayCompleted && <span className="text-2xl md:text-3xl">🏆</span>}
                       </div>
 
-                      {/* Sessions - Mobile Responsive */}
+                      {/* Sessions */}
                       {day.module === 'Rest Day' ? (
                         <div className="text-center py-6 md:py-8 text-gray-500 italic">
                           <span className="text-3xl md:text-4xl mb-2 block">🌟</span>
@@ -1617,19 +1085,6 @@ const StudyCalendarApp = () => {
                                     <div className="text-gray-800 font-medium mt-1 text-sm md:text-base">
                                       {day.morningSession.activity}
                                     </div>
-                                    {day.morningSession.completed && (
-                                      <div className="mt-2 text-xs md:text-sm text-gray-600">
-                                        {day.morningSession.timeSpent > 0 && (
-                                          <span>⏱️ {day.morningSession.timeSpent} min • </span>
-                                        )}
-                                        {day.morningSession.difficulty > 0 && (
-                                          <span>{'⭐'.repeat(day.morningSession.difficulty)} • </span>
-                                        )}
-                                        {day.morningSession.notes && (
-                                          <span>📝 Notes added</span>
-                                        )}
-                                      </div>
-                                    )}
                                   </div>
                                   {!day.morningSession.completed && (
                                     <button
@@ -1671,19 +1126,6 @@ const StudyCalendarApp = () => {
                                     <div className="text-gray-800 font-medium mt-1 text-sm md:text-base">
                                       {day.eveningSession.activity}
                                     </div>
-                                    {day.eveningSession.completed && (
-                                      <div className="mt-2 text-xs md:text-sm text-gray-600">
-                                        {day.eveningSession.timeSpent > 0 && (
-                                          <span>⏱️ {day.eveningSession.timeSpent} min • </span>
-                                        )}
-                                        {day.eveningSession.difficulty > 0 && (
-                                          <span>{'⭐'.repeat(day.eveningSession.difficulty)} • </span>
-                                        )}
-                                        {day.eveningSession.notes && (
-                                          <span>📝 Notes added</span>
-                                        )}
-                                      </div>
-                                    )}
                                   </div>
                                   {!day.eveningSession.completed && (
                                     <button
@@ -1704,7 +1146,7 @@ const StudyCalendarApp = () => {
                   ))}
                 </div>
 
-                {/* Week Completion Actions - Mobile Responsive */}
+                {/* Week Completion Actions */}
                 {stats.weekProgress >= 80 && (
                   <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 md:p-6">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-3 md:space-y-0">
@@ -1725,11 +1167,10 @@ const StudyCalendarApp = () => {
             </div>
           </div>
         ) : (
-          /* Phase 2: Career Dashboard */
           <CareerDashboard />
         )}
 
-        {/* Professional Session Notes Modal with Career Context - Mobile Responsive */}
+        {/* Session Notes Modal */}
         {showNotesModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl shadow-2xl p-4 md:p-8 w-full max-w-lg mx-auto max-h-[90vh] overflow-y-auto">
@@ -1738,7 +1179,6 @@ const StudyCalendarApp = () => {
                 Session Complete!
               </h3>
 
-              {/* Career Impact Preview - Mobile Responsive */}
               <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-3 md:p-4 mb-4 md:mb-6">
                 <h4 className="text-sm font-semibold text-gray-800 mb-2">💼 Career Impact</h4>
                 <div className="space-y-1 text-xs md:text-sm">
