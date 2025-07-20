@@ -1,36 +1,132 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
-const StudyCalendarApp = () => {
-  // Get current date and week info
-  const getCurrentWeekInfo = () => {
-    const now = new Date();
-    const startOfWeek = new Date(now);
-    const day = startOfWeek.getDay();
-    const diff = startOfWeek.getDate() - day;
-    startOfWeek.setDate(diff);
-    startOfWeek.setHours(0, 0, 0, 0);
+// Get current date and week info - moved outside component
+const getCurrentWeekInfo = () => {
+  const now = new Date();
+  const startOfWeek = new Date(now);
+  const day = startOfWeek.getDay();
+  const diff = startOfWeek.getDate() - day;
+  startOfWeek.setDate(diff);
+  startOfWeek.setHours(0, 0, 0, 0);
 
-    const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 6);
-    endOfWeek.setHours(23, 59, 59, 999);
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
+  endOfWeek.setHours(23, 59, 59, 999);
 
-    return { startOfWeek, endOfWeek, currentWeek: Math.floor((now - startOfWeek) / (7 * 24 * 60 * 60 * 1000)) };
+  return { startOfWeek, endOfWeek, currentWeek: Math.floor((now - startOfWeek) / (7 * 24 * 60 * 60 * 1000)) };
+};
+
+// Course modules for professional tracking - moved outside component
+const courseModules = [
+  { id: 1, name: 'Foundations: Data Everywhere', weeks: 2, color: 'bg-blue-500' },
+  { id: 2, name: 'Ask Questions to Make Data-Driven Decisions', weeks: 2, color: 'bg-green-500' },
+  { id: 3, name: 'Prepare Data for Exploration', weeks: 2, color: 'bg-purple-500' },
+  { id: 4, name: 'Process Data from Dirty to Clean', weeks: 2, color: 'bg-orange-500' },
+  { id: 5, name: 'Analyze Data to Answer Questions', weeks: 2, color: 'bg-red-500' },
+  { id: 6, name: 'Share Data Through Visualization', weeks: 2, color: 'bg-indigo-500' },
+  { id: 7, name: 'Data Analysis with R Programming', weeks: 2, color: 'bg-pink-500' },
+  { id: 8, name: 'Google Data Analytics Capstone', weeks: 2, color: 'bg-teal-500' }
+];
+
+// Generate realistic activities based on module progression - moved outside component
+const generateModuleActivities = (module, isFirstWeek, dayIndex) => {
+  const moduleActivities = {
+    'Foundations: Data Everywhere': {
+      week1: [
+        { morning: 'Course Introduction & Data Analytics Overview', evening: 'Data Types & Collection Methods' },
+        { morning: 'Data Analytics Process & Tools', evening: 'Spreadsheet Basics & Functions' },
+        { morning: 'SQL Fundamentals', evening: 'Data Visualization Principles' },
+        { morning: 'Tableau Introduction', evening: 'R Programming Basics' },
+        { morning: 'Weekly Project: Data Analysis', evening: 'Peer Review & Discussion' }
+      ],
+      week2: [
+        { morning: 'Advanced Spreadsheet Functions', evening: 'Data Cleaning Techniques' },
+        { morning: 'SQL Queries & Joins', evening: 'Database Design Principles' },
+        { morning: 'Statistical Concepts', evening: 'Data Ethics & Privacy' },
+        { morning: 'Career Preparation', evening: 'Portfolio Development' },
+        { morning: 'Module Assessment', evening: 'Career Week Activities' }
+      ]
+    },
+    'Ask Questions to Make Data-Driven Decisions': {
+      week1: [
+        { morning: 'Effective Question Formulation', evening: 'SMART Methodology' },
+        { morning: 'Problem-Solving Framework', evening: 'Stakeholder Communication' },
+        { morning: 'Data-Driven Decision Making', evening: 'Business Intelligence Basics' },
+        { morning: 'Metrics & KPIs', evening: 'Dashboard Design' },
+        { morning: 'Weekly Challenge', evening: 'Peer Collaboration' }
+      ],
+      week2: [
+        { morning: 'Advanced Analytics Questions', evening: 'Hypothesis Testing' },
+        { morning: 'Survey Design & Methods', evening: 'Interview Techniques' },
+        { morning: 'Quantitative vs Qualitative', evening: 'Sample Size & Bias' },
+        { morning: 'Presentation Skills', evening: 'Storytelling with Data' },
+        { morning: 'Module Project', evening: 'Professional Portfolio Update' }
+      ]
+    }
   };
 
-  // Course modules for professional tracking
-  const courseModules = [
-    { id: 1, name: 'Foundations: Data Everywhere', weeks: 2, color: 'bg-blue-500' },
-    { id: 2, name: 'Ask Questions to Make Data-Driven Decisions', weeks: 2, color: 'bg-green-500' },
-    { id: 3, name: 'Prepare Data for Exploration', weeks: 2, color: 'bg-purple-500' },
-    { id: 4, name: 'Process Data from Dirty to Clean', weeks: 2, color: 'bg-orange-500' },
-    { id: 5, name: 'Analyze Data to Answer Questions', weeks: 2, color: 'bg-red-500' },
-    { id: 6, name: 'Share Data Through Visualization', weeks: 2, color: 'bg-indigo-500' },
-    { id: 7, name: 'Data Analysis with R Programming', weeks: 2, color: 'bg-pink-500' },
-    { id: 8, name: 'Google Data Analytics Capstone', weeks: 2, color: 'bg-teal-500' }
-  ];
+  const activities = moduleActivities[module.name] || moduleActivities['Foundations: Data Everywhere'];
+  const weekKey = isFirstWeek ? 'week1' : 'week2';
 
-  // Generate week schedule based on current date and week number
-  const generateWeekSchedule = (weekOffset = 0) => {
+  return activities[weekKey][dayIndex - 1] || {
+    morning: 'Course Content Review',
+    evening: 'Practice Exercises'
+  };
+};
+
+// Generate realistic resources - moved outside component
+const generateResources = (activity) => {
+  const resourceTypes = {
+    'Course': [
+      { name: `Video: ${activity}`, url: '#', type: 'video' },
+      { name: `Reading: ${activity} Guide`, url: '#', type: 'reading' }
+    ],
+    'SQL': [
+      { name: 'SQL Practice Platform', url: '#', type: 'coding' },
+      { name: 'Database Schema Reference', url: '#', type: 'guide' }
+    ],
+    'Project': [
+      { name: 'Project Template', url: '#', type: 'template' },
+      { name: 'Dataset for Analysis', url: '#', type: 'dataset' }
+    ],
+    'Assessment': [
+      { name: 'Practice Quiz', url: '#', type: 'quiz' },
+      { name: 'Study Guide', url: '#', type: 'guide' }
+    ]
+  };
+
+  if (activity.includes('SQL')) return resourceTypes.SQL;
+  if (activity.includes('Project') || activity.includes('Challenge')) return resourceTypes.Project;
+  if (activity.includes('Assessment') || activity.includes('Quiz')) return resourceTypes.Assessment;
+  return resourceTypes.Course;
+};
+
+// Job market data simulation - moved outside component
+const getJobMarketData = () => {
+  const baseJobs = 2847;
+  const variation = Math.floor(Math.random() * 200) - 100;
+  const currentJobs = baseJobs + variation;
+
+  return {
+    totalJobs: currentJobs,
+    averageSalary: 68500,
+    salaryGrowth: 18.5,
+    topSkills: [
+      { name: 'SQL', demand: 92, salaryImpact: 15000 },
+      { name: 'Tableau', demand: 85, salaryImpact: 12000 },
+      { name: 'Excel', demand: 78, salaryImpact: 5000 },
+      { name: 'Python', demand: 67, salaryImpact: 18000 },
+      { name: 'R Programming', demand: 45, salaryImpact: 15000 },
+      { name: 'Power BI', demand: 56, salaryImpact: 10000 },
+      { name: 'Statistics', demand: 71, salaryImpact: 8000 },
+      { name: 'Data Visualization', demand: 89, salaryImpact: 10000 }
+    ]
+  };
+};
+
+const StudyCalendarApp = () => {
+  // Generate week schedule based on current date and week number - memoized
+  const generateWeekSchedule = useCallback((weekOffset = 0) => {
     const { startOfWeek } = getCurrentWeekInfo();
     const weekStart = new Date(startOfWeek);
     weekStart.setDate(weekStart.getDate() + (weekOffset * 7));
@@ -135,103 +231,7 @@ const StudyCalendarApp = () => {
     });
 
     return schedule;
-  };
-
-  // Generate realistic activities based on module progression
-  const generateModuleActivities = (module, isFirstWeek, dayIndex) => {
-    const moduleActivities = {
-      'Foundations: Data Everywhere': {
-        week1: [
-          { morning: 'Course Introduction & Data Analytics Overview', evening: 'Data Types & Collection Methods' },
-          { morning: 'Data Analytics Process & Tools', evening: 'Spreadsheet Basics & Functions' },
-          { morning: 'SQL Fundamentals', evening: 'Data Visualization Principles' },
-          { morning: 'Tableau Introduction', evening: 'R Programming Basics' },
-          { morning: 'Weekly Project: Data Analysis', evening: 'Peer Review & Discussion' }
-        ],
-        week2: [
-          { morning: 'Advanced Spreadsheet Functions', evening: 'Data Cleaning Techniques' },
-          { morning: 'SQL Queries & Joins', evening: 'Database Design Principles' },
-          { morning: 'Statistical Concepts', evening: 'Data Ethics & Privacy' },
-          { morning: 'Career Preparation', evening: 'Portfolio Development' },
-          { morning: 'Module Assessment', evening: 'Career Week Activities' }
-        ]
-      },
-      'Ask Questions to Make Data-Driven Decisions': {
-        week1: [
-          { morning: 'Effective Question Formulation', evening: 'SMART Methodology' },
-          { morning: 'Problem-Solving Framework', evening: 'Stakeholder Communication' },
-          { morning: 'Data-Driven Decision Making', evening: 'Business Intelligence Basics' },
-          { morning: 'Metrics & KPIs', evening: 'Dashboard Design' },
-          { morning: 'Weekly Challenge', evening: 'Peer Collaboration' }
-        ],
-        week2: [
-          { morning: 'Advanced Analytics Questions', evening: 'Hypothesis Testing' },
-          { morning: 'Survey Design & Methods', evening: 'Interview Techniques' },
-          { morning: 'Quantitative vs Qualitative', evening: 'Sample Size & Bias' },
-          { morning: 'Presentation Skills', evening: 'Storytelling with Data' },
-          { morning: 'Module Project', evening: 'Professional Portfolio Update' }
-        ]
-      }
-    };
-
-    const activities = moduleActivities[module.name] || moduleActivities['Foundations: Data Everywhere'];
-    const weekKey = isFirstWeek ? 'week1' : 'week2';
-
-    return activities[weekKey][dayIndex - 1] || {
-      morning: 'Course Content Review',
-      evening: 'Practice Exercises'
-    };
-  };
-
-  // Generate realistic resources
-  const generateResources = (activity) => {
-    const resourceTypes = {
-      'Course': [
-        { name: `Video: ${activity}`, url: '#', type: 'video' },
-        { name: `Reading: ${activity} Guide`, url: '#', type: 'reading' }
-      ],
-      'SQL': [
-        { name: 'SQL Practice Platform', url: '#', type: 'coding' },
-        { name: 'Database Schema Reference', url: '#', type: 'guide' }
-      ],
-      'Project': [
-        { name: 'Project Template', url: '#', type: 'template' },
-        { name: 'Dataset for Analysis', url: '#', type: 'dataset' }
-      ],
-      'Assessment': [
-        { name: 'Practice Quiz', url: '#', type: 'quiz' },
-        { name: 'Study Guide', url: '#', type: 'guide' }
-      ]
-    };
-
-    if (activity.includes('SQL')) return resourceTypes.SQL;
-    if (activity.includes('Project') || activity.includes('Challenge')) return resourceTypes.Project;
-    if (activity.includes('Assessment') || activity.includes('Quiz')) return resourceTypes.Assessment;
-    return resourceTypes.Course;
-  };
-
-  // Job market data simulation
-  const getJobMarketData = () => {
-    const baseJobs = 2847;
-    const variation = Math.floor(Math.random() * 200) - 100;
-    const currentJobs = baseJobs + variation;
-
-    return {
-      totalJobs: currentJobs,
-      averageSalary: 68500,
-      salaryGrowth: 18.5,
-      topSkills: [
-        { name: 'SQL', demand: 92, salaryImpact: 15000 },
-        { name: 'Tableau', demand: 85, salaryImpact: 12000 },
-        { name: 'Excel', demand: 78, salaryImpact: 5000 },
-        { name: 'Python', demand: 67, salaryImpact: 18000 },
-        { name: 'R Programming', demand: 45, salaryImpact: 15000 },
-        { name: 'Power BI', demand: 56, salaryImpact: 10000 },
-        { name: 'Statistics', demand: 71, salaryImpact: 8000 },
-        { name: 'Data Visualization', demand: 89, salaryImpact: 10000 }
-      ]
-    };
-  };
+  }, []);
 
   const studyTechniques = {
     'active-learning': { name: 'Active Learning', icon: '🧠', description: 'Engage with material through practice' },
@@ -369,7 +369,7 @@ const StudyCalendarApp = () => {
   // Initialize study schedule on mount
   useEffect(() => {
     setStudySchedule(generateWeekSchedule(settings.currentWeek));
-  }, [settings.currentWeek]);
+  }, [settings.currentWeek, generateWeekSchedule]);
 
   // Calculate stats when schedule changes
   useEffect(() => {
@@ -689,10 +689,6 @@ const StudyCalendarApp = () => {
                       {rec.title}
                     </h3>
                     <p className="text-gray-600 mt-1 text-sm md:text-base">{rec.description}</p>
-                    <div className="flex flex-col md:flex-row md:items-center md:space-x-4 space-y-1 md:space-y-0 mt-2">
-                      <span className="text-xs md:text-sm font-medium text-blue-600">📋 {rec.action}</span>
-                      <span className="text-xs md:text-sm text-green-600">📈 {rec.impact}</span>
-                    </div>
                   </div>
                 </div>
               </div>
