@@ -9,11 +9,11 @@ const StudyCalendarApp = () => {
     const diff = startOfWeek.getDate() - day;
     startOfWeek.setDate(diff);
     startOfWeek.setHours(0, 0, 0, 0);
-    
+
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setDate(startOfWeek.getDate() + 6);
     endOfWeek.setHours(23, 59, 59, 999);
-    
+
     return { startOfWeek, endOfWeek, currentWeek: Math.floor((now - startOfWeek) / (7 * 24 * 60 * 60 * 1000)) };
   };
 
@@ -34,30 +34,30 @@ const StudyCalendarApp = () => {
     const { startOfWeek } = getCurrentWeekInfo();
     const weekStart = new Date(startOfWeek);
     weekStart.setDate(weekStart.getDate() + (weekOffset * 7));
-    
+
     const moduleIndex = Math.floor(weekOffset / 2);
     const currentModule = courseModules[moduleIndex] || courseModules[0];
     const isFirstWeekOfModule = weekOffset % 2 === 0;
-    
+
     const schedule = [];
-    
+
     // Generate 5 study days (Monday-Friday)
     for (let i = 1; i <= 5; i++) {
       const currentDate = new Date(weekStart);
       currentDate.setDate(weekStart.getDate() + i);
-      
-      const dateStr = currentDate.toLocaleDateString('en-US', { 
-        month: 'long', 
-        day: 'numeric' 
+
+      const dateStr = currentDate.toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric'
       });
-      
-      const dayName = currentDate.toLocaleDateString('en-US', { 
-        weekday: 'long' 
+
+      const dayName = currentDate.toLocaleDateString('en-US', {
+        weekday: 'long'
       });
 
       // Generate content based on module and week
       const activities = generateModuleActivities(currentModule, isFirstWeekOfModule, i);
-      
+
       schedule.push({
         id: `week${weekOffset}-day${i}`,
         date: dateStr,
@@ -176,10 +176,10 @@ const StudyCalendarApp = () => {
 
     const activities = moduleActivities[module.name] || moduleActivities['Foundations: Data Everywhere'];
     const weekKey = isFirstWeek ? 'week1' : 'week2';
-    
-    return activities[weekKey][dayIndex - 1] || { 
-      morning: 'Course Content Review', 
-      evening: 'Practice Exercises' 
+
+    return activities[weekKey][dayIndex - 1] || {
+      morning: 'Course Content Review',
+      evening: 'Practice Exercises'
     };
   };
 
@@ -238,7 +238,7 @@ const StudyCalendarApp = () => {
     const baseJobs = 2847;
     const variation = Math.floor(Math.random() * 200) - 100;
     const currentJobs = baseJobs + variation;
-    
+
     return {
       totalJobs: currentJobs,
       averageSalary: 68500,
@@ -259,10 +259,10 @@ const StudyCalendarApp = () => {
   // Calculate career readiness based on study progress
   const calculateCareerReadiness = () => {
     const marketData = getJobMarketData();
-    const completedSessions = studySchedule.filter(day => 
+    const completedSessions = studySchedule.filter(day =>
       (day.morningSession?.completed || false) || (day.eveningSession?.completed || false)
     ).length;
-    
+
     // Map study progress to skills acquired
     const skillsMap = {
       'SQL': completedSessions >= 4 ? 'Intermediate' : completedSessions >= 2 ? 'Beginner' : 'None',
@@ -302,7 +302,7 @@ const StudyCalendarApp = () => {
     matchedJobs = Math.floor(marketData.totalJobs * (readinessScore / 100) * 0.6); // 60% of jobs at readiness level
 
     // Identify next priority skill
-    const missingSkills = marketData.topSkills.filter(skill => 
+    const missingSkills = marketData.topSkills.filter(skill =>
       skillsMap[skill.name] === 'None' || skillsMap[skill.name] === 'Beginner'
     ).sort((a, b) => (b.demand * b.salaryImpact) - (a.demand * a.salaryImpact));
 
@@ -370,7 +370,7 @@ const StudyCalendarApp = () => {
         const currentWeekSchedule = generateWeekSchedule(settings.currentWeek);
         const savedWeek = parsed[0]?.week;
         const currentWeek = currentWeekSchedule[0]?.week;
-        
+
         if (savedWeek === currentWeek) {
           return parsed;
         }
@@ -386,7 +386,7 @@ const StudyCalendarApp = () => {
     const saved = localStorage.getItem('notifications-enabled');
     return saved ? JSON.parse(saved) : false;
   });
-  
+
   const [currentTime, setCurrentTime] = useState(new Date());
   const [timerActive, setTimerActive] = useState(false);
   const [timerPaused, setTimerPaused] = useState(false);
@@ -410,7 +410,7 @@ const StudyCalendarApp = () => {
   // Phase 2: Career Dashboard State
   const [activeTab, setActiveTab] = useState('schedule'); // 'schedule' or 'career'
   const [showCareerDashboard, setShowCareerDashboard] = useState(false);
-  
+
   // Portfolio Projects Management
   const [portfolioProjects, setPortfolioProjects] = useState(() => {
     const saved = localStorage.getItem('portfolio-projects');
@@ -573,15 +573,15 @@ const StudyCalendarApp = () => {
 
   // Phase 2: AI-Powered Career Recommendations
   const generateAIRecommendations = () => {
-    const completedSessions = studySchedule.filter(day => 
+    const completedSessions = studySchedule.filter(day =>
       (day.morningSession?.completed || false) || (day.eveningSession?.completed || false)
     ).length;
-    
+
     const weekProgress = stats.weekProgress;
     const currentWeek = settings.currentWeek;
     const readinessScore = careerReadiness.readinessScore;
     const completedProjects = portfolioProjects.filter(p => p.status === 'completed').length;
-    
+
     const recommendations = [];
 
     // Study Performance Analysis
@@ -666,7 +666,7 @@ const StudyCalendarApp = () => {
   // Enhanced Job Market Analysis
   const getDetailedJobMarketData = () => {
     const baseData = getJobMarketData();
-    
+
     // Simulate location-based data
     const locationData = {
       'Remote/US': { multiplier: 1.0, competition: 'High', salaryBonus: 5000 },
@@ -721,14 +721,14 @@ const StudyCalendarApp = () => {
 
   // Calculate study statistics
   const calculateStats = () => {
-    const completedSessions = studySchedule.filter(day => 
+    const completedSessions = studySchedule.filter(day =>
       (day.morningSession?.completed || false) || (day.eveningSession?.completed || false)
     ).length;
-    
-    const totalSessions = studySchedule.filter(day => 
+
+    const totalSessions = studySchedule.filter(day =>
       day.morningSession || day.eveningSession
     ).length;
-    
+
     const completedDays = studySchedule.filter(day => day.dayCompleted).length;
     const totalStudyTime = studySchedule.reduce((total, day) => {
       const morningTime = day.morningSession?.timeSpent || 0;
@@ -819,7 +819,7 @@ const StudyCalendarApp = () => {
       if (day.id === selectedSession.dayId) {
         const updatedDay = { ...day };
         const sessionKey = selectedSession.sessionType === 'morning' ? 'morningSession' : 'eveningSession';
-        
+
         updatedDay[sessionKey] = {
           ...updatedDay[sessionKey],
           completed: true,
@@ -828,17 +828,17 @@ const StudyCalendarApp = () => {
           technique: selectedTechnique,
           timeSpent: Math.max(pomodoroCount * 25, 30) // Minimum 30 min
         };
-        
+
         // Check if day is complete
         const morningDone = !updatedDay.morningSession || updatedDay.morningSession.completed;
         const eveningDone = !updatedDay.eveningSession || updatedDay.eveningSession.completed;
         updatedDay.dayCompleted = morningDone && eveningDone;
-        
+
         return updatedDay;
       }
       return day;
     }));
-    
+
     setShowNotesModal(false);
     setPomodoroCount(0);
   };
@@ -846,7 +846,7 @@ const StudyCalendarApp = () => {
   const toggleSession = (dayId, sessionType) => {
     const day = studySchedule.find(d => d.id === dayId);
     const session = sessionType === 'morning' ? day.morningSession : day.eveningSession;
-    
+
     if (!session.completed) {
       completeSession(dayId, sessionType, session);
     } else {
@@ -909,7 +909,7 @@ const StudyCalendarApp = () => {
   const getMotivationalMessage = () => {
     const readiness = careerReadiness.readinessScore;
     const matchedJobs = careerReadiness.matchedJobs;
-    
+
     if (readiness < 20) return `🚀 Just getting started! You're building valuable data skills for ${matchedJobs.toLocaleString()} potential jobs`;
     if (readiness < 40) return `💪 Great progress! You're now qualified for ${matchedJobs.toLocaleString()} data analyst roles`;
     if (readiness < 60) return `🔥 You're building serious expertise! ${matchedJobs.toLocaleString()} jobs match your growing skillset`;
@@ -930,7 +930,7 @@ const StudyCalendarApp = () => {
   const CareerDashboard = () => {
     const aiRecommendations = generateAIRecommendations();
     const detailedMarketData = getDetailedJobMarketData();
-    
+
     return (
       <div className="space-y-6">
         {/* AI Recommendations */}
@@ -939,7 +939,7 @@ const StudyCalendarApp = () => {
             <span className="mr-3">🤖</span>
             AI Career Recommendations
           </h2>
-          
+
           <div className="space-y-4">
             {aiRecommendations.slice(0, 3).map((rec, index) => (
               <div key={index} className={`border-l-4 p-4 rounded-lg ${
@@ -982,7 +982,7 @@ const StudyCalendarApp = () => {
               <span className="mr-3">🎯</span>
               Portfolio Projects
             </h3>
-            
+
             <div className="space-y-4">
               {portfolioProjects.map((project) => (
                 <div key={project.id} className={`border rounded-lg p-4 ${
@@ -995,7 +995,7 @@ const StudyCalendarApp = () => {
                     <div className="flex-1">
                       <h4 className="font-medium text-gray-800">{project.title}</h4>
                       <p className="text-sm text-gray-600 mt-1">{project.description}</p>
-                      
+
                       <div className="flex items-center space-x-4 mt-2">
                         <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded">
                           {'⭐'.repeat(project.difficulty)} Difficulty
@@ -1009,7 +1009,7 @@ const StudyCalendarApp = () => {
                           </span>
                         )}
                       </div>
-                      
+
                       <div className="flex flex-wrap gap-1 mt-2">
                         {project.skills.map((skill) => (
                           <span key={skill} className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
@@ -1018,14 +1018,14 @@ const StudyCalendarApp = () => {
                         ))}
                       </div>
                     </div>
-                    
+
                     <div className="ml-4">
                       {project.status === 'completed' && <span className="text-2xl">✅</span>}
                       {project.status === 'in-progress' && <span className="text-2xl">🚧</span>}
-                      {project.status === 'not-started' && settings.currentWeek >= project.weekUnlocked && 
+                      {project.status === 'not-started' && settings.currentWeek >= project.weekUnlocked &&
                         <button
                           onClick={() => {
-                            setPortfolioProjects(prev => prev.map(p => 
+                            setPortfolioProjects(prev => prev.map(p =>
                               p.id === project.id ? { ...p, status: 'in-progress' } : p
                             ));
                           }}
@@ -1047,7 +1047,7 @@ const StudyCalendarApp = () => {
               <span className="mr-3">📊</span>
               Market Intelligence
             </h3>
-            
+
             <div className="space-y-4">
               {/* Industry Breakdown */}
               <div>
@@ -1068,7 +1068,7 @@ const StudyCalendarApp = () => {
                   ))}
                 </div>
               </div>
-              
+
               {/* Salary Progression */}
               <div>
                 <h4 className="font-medium text-gray-800 mb-2">Career Path & Salary</h4>
@@ -1085,7 +1085,7 @@ const StudyCalendarApp = () => {
                   ))}
                 </div>
               </div>
-              
+
               {/* Market Trends */}
               <div>
                 <h4 className="font-medium text-gray-800 mb-2">Market Trends</h4>
@@ -1125,7 +1125,7 @@ const StudyCalendarApp = () => {
                 + Add Application
               </button>
             </div>
-            
+
             {jobApplications.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 <span className="text-4xl block mb-2">🎯</span>
@@ -1163,7 +1163,7 @@ const StudyCalendarApp = () => {
               <span className="mr-3">🎤</span>
               Interview Prep
             </h3>
-            
+
             <div className="space-y-4">
               <div>
                 <h4 className="font-medium text-gray-800 mb-2">Common Questions</h4>
@@ -1188,7 +1188,7 @@ const StudyCalendarApp = () => {
                   ))}
                 </div>
               </div>
-              
+
               <div>
                 <h4 className="font-medium text-gray-800 mb-2">Technical Skills</h4>
                 <div className="space-y-2">
@@ -1212,7 +1212,7 @@ const StudyCalendarApp = () => {
                   ))}
                 </div>
               </div>
-              
+
               <div className="pt-3 border-t">
                 <div className="text-sm text-gray-600">
                   <div>📊 Progress: {Math.round((interviewPrep.commonQuestions.filter(q => q.practiced).length / interviewPrep.commonQuestions.length) * 100)}% practiced</div>
@@ -1229,7 +1229,7 @@ const StudyCalendarApp = () => {
             <span className="mr-3">🌐</span>
             Professional Development
           </h3>
-          
+
           <div className="grid md:grid-cols-3 gap-6">
             <div>
               <h4 className="font-medium text-gray-800 mb-3">Networking Progress</h4>
@@ -1248,7 +1248,7 @@ const StudyCalendarApp = () => {
                 </div>
               </div>
             </div>
-            
+
             <div>
               <h4 className="font-medium text-gray-800 mb-3">Recommended Communities</h4>
               <div className="space-y-2 text-sm">
@@ -1258,7 +1258,7 @@ const StudyCalendarApp = () => {
                 <div className="text-gray-700">• Local Data Science Meetups</div>
               </div>
             </div>
-            
+
             <div>
               <h4 className="font-medium text-gray-800 mb-3">Next Steps</h4>
               <div className="space-y-2 text-sm">
@@ -1324,7 +1324,7 @@ const StudyCalendarApp = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-6">
               {/* Study Streak */}
               <div className="text-center">
@@ -1354,8 +1354,8 @@ const StudyCalendarApp = () => {
                   }
                 }}
                 className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors ${
-                  notificationsEnabled 
-                    ? 'bg-green-100 text-green-700 hover:bg-green-200' 
+                  notificationsEnabled
+                    ? 'bg-green-100 text-green-700 hover:bg-green-200'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
@@ -1364,7 +1364,7 @@ const StudyCalendarApp = () => {
                   {notificationsEnabled ? 'Alerts On' : 'Enable Alerts'}
                 </span>
               </button>
-              
+
               {/* Progress Stats */}
               <div className="text-right">
                 <div className="text-2xl font-bold text-blue-600">{stats.weekProgress}%</div>
@@ -1398,7 +1398,7 @@ const StudyCalendarApp = () => {
               </button>
             </nav>
           </div>
-          
+
           {/* Course Progress Bar */}
           <div className="mt-6">
             <div className="flex justify-between items-center mb-2">
@@ -1406,7 +1406,7 @@ const StudyCalendarApp = () => {
               <span className="text-sm text-gray-600">{stats.overallProgress}% Complete</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-3">
-              <div 
+              <div
                 className="bg-gradient-to-r from-blue-500 to-green-500 h-3 rounded-full transition-all duration-300"
                 style={{ width: `${stats.overallProgress}%` }}
               ></div>
@@ -1423,14 +1423,14 @@ const StudyCalendarApp = () => {
               >
                 ← Previous Week
               </button>
-              
+
               <button
                 onClick={() => setShowWeekSelector(!showWeekSelector)}
                 className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200"
               >
                 Jump to Week...
               </button>
-              
+
               <button
                 onClick={goToNextWeek}
                 disabled={stats.weekProgress < 80}
@@ -1439,7 +1439,7 @@ const StudyCalendarApp = () => {
                 Next Week →
               </button>
             </div>
-            
+
             <p className="text-lg text-gray-700 italic">{getMotivationalMessage()}</p>
           </div>
 
@@ -1479,16 +1479,16 @@ const StudyCalendarApp = () => {
                   <span className="mr-2">⏰</span>
                   Focus Timer
                 </h2>
-                
+
                 <div className="text-center">
                   <div className="text-5xl font-bold text-gray-800 mb-2">
                     {formatTime(timeLeft)}
                   </div>
-                  
+
                   <div className="text-lg text-gray-600 mb-4">
                     {isBreakTime ? '☕ Break Time' : '📚 Study Time'}
                   </div>
-                  
+
                   <div className="flex justify-center space-x-3 mb-4">
                     {!timerActive ? (
                       <button
@@ -1517,7 +1517,7 @@ const StudyCalendarApp = () => {
                       </>
                     )}
                   </div>
-                  
+
                   <div className="space-y-2">
                     <div className="text-sm text-gray-500">
                       🍅 Today's Focus Sessions: {pomodoroCount}
@@ -1535,7 +1535,7 @@ const StudyCalendarApp = () => {
                   <span className="mr-2">📈</span>
                   This Week
                 </h3>
-                
+
                 <div className="space-y-4">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Sessions Complete</span>
@@ -1553,7 +1553,7 @@ const StudyCalendarApp = () => {
                     <span className="text-gray-600">Progress</span>
                     <span className="font-semibold text-orange-600">{stats.weekProgress}%</span>
                   </div>
-                  
+
                   {/* Career Progress Section */}
                   <div className="pt-3 border-t border-gray-200">
                     <div className="flex justify-between">
@@ -1574,7 +1574,7 @@ const StudyCalendarApp = () => {
                   <span className="mr-2">💼</span>
                   Career Insights
                 </h3>
-                
+
                 <div className="space-y-4">
                   {/* Job Readiness Score */}
                   <div className="bg-white rounded-lg p-4">
@@ -1583,7 +1583,7 @@ const StudyCalendarApp = () => {
                       <span className="text-lg font-bold text-green-600">{careerReadiness.readinessScore}%</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
+                      <div
                         className="bg-gradient-to-r from-green-400 to-green-600 h-2 rounded-full transition-all duration-300"
                         style={{ width: `${careerReadiness.readinessScore}%` }}
                       ></div>
@@ -1659,7 +1659,7 @@ const StudyCalendarApp = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="divide-y divide-gray-100">
                   {studySchedule.map((day) => (
                     <div key={day.id} className={`p-6 transition-all ${
@@ -1669,8 +1669,8 @@ const StudyCalendarApp = () => {
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center space-x-4">
                           <div className="w-8 h-8 flex items-center justify-center">
-                            {day.dayCompleted ? 
-                              <span className="text-green-600 text-2xl">✅</span> : 
+                            {day.dayCompleted ?
+                              <span className="text-green-600 text-2xl">✅</span> :
                               <span className="text-gray-400 text-2xl">📅</span>
                             }
                           </div>
@@ -1698,7 +1698,7 @@ const StudyCalendarApp = () => {
                           {/* Morning Session */}
                           {day.morningSession && (
                             <div className={`border rounded-lg transition-all ${
-                              day.morningSession.completed 
+                              day.morningSession.completed
                                 ? 'bg-green-50 border-green-200'
                                 : 'bg-orange-50 border-orange-200 hover:border-orange-300'
                             }`}>
@@ -1708,8 +1708,8 @@ const StudyCalendarApp = () => {
                                     onClick={() => toggleSession(day.id, 'morning')}
                                     className="transition-colors"
                                   >
-                                    {day.morningSession.completed ? 
-                                      <span className="text-green-600 text-xl">✅</span> : 
+                                    {day.morningSession.completed ?
+                                      <span className="text-green-600 text-xl">✅</span> :
                                       <span className="text-gray-400 text-xl hover:text-green-600">⬜</span>
                                     }
                                   </button>
@@ -1752,7 +1752,7 @@ const StudyCalendarApp = () => {
                           {/* Evening Session */}
                           {day.eveningSession && (
                             <div className={`border rounded-lg transition-all ${
-                              day.eveningSession.completed 
+                              day.eveningSession.completed
                                 ? 'bg-green-50 border-green-200'
                                 : 'bg-purple-50 border-purple-200 hover:border-purple-300'
                             }`}>
@@ -1762,8 +1762,8 @@ const StudyCalendarApp = () => {
                                     onClick={() => toggleSession(day.id, 'evening')}
                                     className="transition-colors"
                                   >
-                                    {day.eveningSession.completed ? 
-                                      <span className="text-green-600 text-xl">✅</span> : 
+                                    {day.eveningSession.completed ?
+                                      <span className="text-green-600 text-xl">✅</span> :
                                       <span className="text-gray-400 text-xl hover:text-green-600">⬜</span>
                                     }
                                   </button>
@@ -1841,7 +1841,7 @@ const StudyCalendarApp = () => {
                 <span className="mr-3">🎯</span>
                 Session Complete!
               </h3>
-              
+
               {/* Career Impact Preview */}
               <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-4 mb-6">
                 <h4 className="text-sm font-semibold text-gray-800 mb-2">💼 Career Impact</h4>
@@ -1851,7 +1851,7 @@ const StudyCalendarApp = () => {
                   <div className="text-purple-700">💰 Building ${careerReadiness.nextPrioritySkill?.salaryImpact.toLocaleString() || '10,000'}+ earning potential</div>
                 </div>
               </div>
-              
+
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">
@@ -1890,7 +1890,7 @@ const StudyCalendarApp = () => {
                     1 = Very Easy, 3 = Just Right, 5 = Very Challenging
                   </p>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">
                     Session Notes & Career Reflections
@@ -1904,7 +1904,7 @@ const StudyCalendarApp = () => {
                   />
                 </div>
               </div>
-              
+
               <div className="flex space-x-4 mt-8">
                 <button
                   onClick={() => setShowNotesModal(false)}
