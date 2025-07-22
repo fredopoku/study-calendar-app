@@ -630,7 +630,7 @@ const StudyCalendarApp = () => {
     return "Just Started";
   };
 
-  // AI Recommendations
+  // AI Recommendations - Full version
   const generateAIRecommendations = () => {
     const recommendations = [];
 
@@ -656,12 +656,122 @@ const StudyCalendarApp = () => {
       });
     }
 
-    return recommendations;
+    // Portfolio Development
+    const completedProjects = portfolioProjects.filter(p => p.status === 'completed').length;
+    if (settings.currentWeek >= 4 && completedProjects === 0) {
+      recommendations.push({
+        type: 'portfolio',
+        priority: 'medium',
+        title: 'Start Portfolio Project',
+        description: 'You\'re ready to begin hands-on projects. Start with Customer Churn Analysis to demonstrate SQL skills.',
+        action: 'Begin first project',
+        impact: '+25% interview callbacks'
+      });
+    }
+
+    // Job Application Timing
+    if (careerReadiness.readinessScore >= 60 && jobApplications.length === 0) {
+      recommendations.push({
+        type: 'application',
+        priority: 'medium',
+        title: 'Begin Job Applications',
+        description: `At ${careerReadiness.readinessScore}% readiness, you're competitive for entry-level positions. Start applying to build interview experience.`,
+        action: 'Apply to 5 junior roles',
+        impact: 'Gain market feedback'
+      });
+    }
+
+    // Networking Recommendations
+    if (professionalNetwork.linkedinConnections < 50) {
+      recommendations.push({
+        type: 'network',
+        priority: 'low',
+        title: 'Expand Professional Network',
+        description: 'Connect with data professionals and join analytics communities to discover opportunities.',
+        action: 'Join 3 data communities',
+        impact: '60% of jobs come from networking'
+      });
+    }
+
+    // Interview Preparation
+    const practicedQuestions = interviewPrep.commonQuestions.filter(q => q.practiced).length;
+    if (careerReadiness.readinessScore >= 40 && practicedQuestions < 3) {
+      recommendations.push({
+        type: 'interview',
+        priority: 'medium',
+        title: 'Practice Interview Questions',
+        description: 'Prepare for technical and behavioral questions to increase confidence.',
+        action: 'Practice 5 questions weekly',
+        impact: '+30% interview success'
+      });
+    }
+
+    return recommendations.sort((a, b) => {
+      const priorityOrder = { high: 3, medium: 2, low: 1 };
+      return priorityOrder[b.priority] - priorityOrder[a.priority];
+    });
   };
 
-  // Career Dashboard Component
+  // Enhanced Job Market Analysis
+  const getDetailedJobMarketData = () => {
+    const baseData = getJobMarketData();
+
+    // Simulate location-based data
+    const locationData = {
+      'Remote/US': { multiplier: 1.0, competition: 'High', salaryBonus: 5000 },
+      'San Francisco': { multiplier: 1.4, competition: 'Very High', salaryBonus: 25000 },
+      'New York': { multiplier: 1.3, competition: 'Very High', salaryBonus: 20000 },
+      'Austin': { multiplier: 1.1, competition: 'Medium', salaryBonus: 8000 },
+      'Denver': { multiplier: 1.05, competition: 'Medium', salaryBonus: 5000 },
+      'Chicago': { multiplier: 1.15, competition: 'High', salaryBonus: 12000 }
+    };
+
+    // Industry breakdown
+    const industryData = [
+      { name: 'Technology', percentage: 35, avgSalary: 75000, growth: 22 },
+      { name: 'Finance', percentage: 25, avgSalary: 78000, growth: 18 },
+      { name: 'Healthcare', percentage: 15, avgSalary: 70000, growth: 25 },
+      { name: 'Retail/E-commerce', percentage: 12, avgSalary: 65000, growth: 20 },
+      { name: 'Consulting', percentage: 8, avgSalary: 80000, growth: 15 },
+      { name: 'Other', percentage: 5, avgSalary: 68000, growth: 12 }
+    ];
+
+    // Company size analysis
+    const companySizeData = [
+      { size: 'Startup (1-50)', percentage: 20, avgSalary: 68000, workLifeBalance: 3.2, learningOpportunity: 4.5 },
+      { size: 'Small (51-200)', percentage: 25, avgSalary: 70000, workLifeBalance: 3.8, learningOpportunity: 4.2 },
+      { size: 'Medium (201-1000)', percentage: 30, avgSalary: 72000, workLifeBalance: 3.6, learningOpportunity: 3.8 },
+      { size: 'Large (1000+)', percentage: 25, avgSalary: 75000, workLifeBalance: 3.4, learningOpportunity: 3.5 }
+    ];
+
+    // Salary progression forecast
+    const salaryProgression = [
+      { year: 0, title: 'Junior Data Analyst', salary: 55000 },
+      { year: 1, title: 'Data Analyst', salary: 68000 },
+      { year: 3, title: 'Senior Data Analyst', salary: 85000 },
+      { year: 5, title: 'Data Analytics Manager', salary: 105000 },
+      { year: 7, title: 'Senior Manager/Director', salary: 130000 }
+    ];
+
+    return {
+      ...baseData,
+      locationData,
+      industryData,
+      companySizeData,
+      salaryProgression,
+      marketTrends: {
+        remoteWork: 75, // % of remote positions
+        contractWork: 15, // % of contract positions
+        entryLevelDemand: 'High',
+        skillsGapOpportunity: 'Significant'
+      }
+    };
+  };
+
+  // Career Dashboard Component - Full version restored
   const CareerDashboard = () => {
     const aiRecommendations = generateAIRecommendations();
+    const detailedMarketData = getDetailedJobMarketData();
 
     return (
       <div className="space-y-4 md:space-y-6">
@@ -689,36 +799,325 @@ const StudyCalendarApp = () => {
                       {rec.title}
                     </h3>
                     <p className="text-gray-600 mt-1 text-sm md:text-base">{rec.description}</p>
+                    <div className="flex flex-col md:flex-row md:items-center md:space-x-4 space-y-1 md:space-y-0 mt-2">
+                      <span className="text-xs md:text-sm font-medium text-blue-600">📋 {rec.action}</span>
+                      <span className="text-xs md:text-sm text-green-600">📈 {rec.impact}</span>
+                    </div>
                   </div>
+                  <span className={`px-2 py-1 text-xs font-medium rounded self-start ${
+                    rec.priority === 'high' ? 'bg-red-100 text-red-800' :
+                    rec.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-green-100 text-green-800'
+                  }`}>
+                    {rec.priority.toUpperCase()}
+                  </span>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Portfolio Projects */}
-        <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
-          <h3 className="text-lg md:text-xl font-semibold mb-4 flex items-center">
-            <span className="mr-2 md:mr-3">🎯</span>
-            Portfolio Projects
-          </h3>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+          {/* Portfolio Projects */}
+          <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
+            <h3 className="text-lg md:text-xl font-semibold mb-4 flex items-center">
+              <span className="mr-2 md:mr-3">🎯</span>
+              Portfolio Projects
+            </h3>
 
-          <div className="space-y-3 md:space-y-4">
-            {portfolioProjects.map((project) => (
-              <div key={project.id} className={`border rounded-lg p-3 md:p-4 ${
-                project.status === 'completed' ? 'bg-green-50 border-green-200' :
-                project.status === 'in-progress' ? 'bg-blue-50 border-blue-200' :
-                settings.currentWeek >= project.weekUnlocked ? 'bg-gray-50 border-gray-200' :
-                'bg-gray-100 border-gray-300 opacity-50'
-              }`}>
-                <div className="flex flex-col md:flex-row md:items-start justify-between space-y-3 md:space-y-0">
-                  <div className="flex-1">
-                    <h4 className="font-medium text-gray-800 text-sm md:text-base">{project.title}</h4>
-                    <p className="text-xs md:text-sm text-gray-600 mt-1">{project.description}</p>
+            <div className="space-y-3 md:space-y-4">
+              {portfolioProjects.map((project) => (
+                <div key={project.id} className={`border rounded-lg p-3 md:p-4 ${
+                  project.status === 'completed' ? 'bg-green-50 border-green-200' :
+                  project.status === 'in-progress' ? 'bg-blue-50 border-blue-200' :
+                  settings.currentWeek >= project.weekUnlocked ? 'bg-gray-50 border-gray-200' :
+                  'bg-gray-100 border-gray-300 opacity-50'
+                }`}>
+                  <div className="flex flex-col md:flex-row md:items-start justify-between space-y-3 md:space-y-0">
+                    <div className="flex-1">
+                      <h4 className="font-medium text-gray-800 text-sm md:text-base">{project.title}</h4>
+                      <p className="text-xs md:text-sm text-gray-600 mt-1">{project.description}</p>
+
+                      <div className="flex items-center space-x-4 mt-2">
+                        <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded">
+                          {'⭐'.repeat(project.difficulty)} Difficulty
+                        </span>
+                        <span className="text-xs text-gray-600">
+                          {project.estimatedHours}h estimated
+                        </span>
+                        {settings.currentWeek < project.weekUnlocked && (
+                          <span className="text-xs text-orange-600">
+                            Unlocks Week {project.weekUnlocked}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {project.skills.map((skill) => (
+                          <span key={skill} className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="md:ml-4 self-start">
+                      {project.status === 'completed' && <span className="text-2xl">✅</span>}
+                      {project.status === 'in-progress' && <span className="text-2xl">🚧</span>}
+                      {project.status === 'not-started' && settings.currentWeek >= project.weekUnlocked &&
+                        <button
+                          onClick={() => {
+                            setPortfolioProjects(prev => prev.map(p =>
+                              p.id === project.id ? { ...p, status: 'in-progress' } : p
+                            ));
+                          }}
+                          className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                        >
+                          Start
+                        </button>
+                      }
+                    </div>
                   </div>
                 </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Job Market Intelligence */}
+          <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
+            <h3 className="text-lg md:text-xl font-semibold mb-4 flex items-center">
+              <span className="mr-2 md:mr-3">📊</span>
+              Market Intelligence
+            </h3>
+
+            <div className="space-y-4">
+              {/* Industry Breakdown */}
+              <div>
+                <h4 className="font-medium text-gray-800 mb-2 text-sm md:text-base">Top Industries Hiring</h4>
+                <div className="space-y-2">
+                  {detailedMarketData.industryData.slice(0, 4).map((industry) => (
+                    <div key={industry.name} className="flex justify-between items-center">
+                      <span className="text-xs md:text-sm text-gray-700">{industry.name}</span>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-xs md:text-sm font-medium text-green-600">
+                          ${industry.avgSalary.toLocaleString()}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {industry.percentage}%
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            ))}
+
+              {/* Salary Progression */}
+              <div>
+                <h4 className="font-medium text-gray-800 mb-2 text-sm md:text-base">Career Path & Salary</h4>
+                <div className="space-y-2">
+                  {detailedMarketData.salaryProgression.slice(0, 3).map((step) => (
+                    <div key={step.year} className="flex justify-between items-center">
+                      <span className="text-xs md:text-sm text-gray-700">
+                        {step.year === 0 ? 'Entry' : `${step.year}y`} - {step.title}
+                      </span>
+                      <span className="text-xs md:text-sm font-medium text-blue-600">
+                        ${step.salary.toLocaleString()}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Market Trends */}
+              <div>
+                <h4 className="font-medium text-gray-800 mb-2 text-sm md:text-base">Market Trends</h4>
+                <div className="space-y-1 text-xs md:text-sm text-gray-600">
+                  <div>🏠 {detailedMarketData.marketTrends.remoteWork}% remote positions</div>
+                  <div>📈 {detailedMarketData.marketTrends.entryLevelDemand} entry-level demand</div>
+                  <div>🎯 {detailedMarketData.marketTrends.skillsGapOpportunity} opportunity gap</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+          {/* Job Applications Tracker */}
+          <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
+            <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4 space-y-2 md:space-y-0">
+              <h3 className="text-lg md:text-xl font-semibold flex items-center">
+                <span className="mr-2 md:mr-3">📝</span>
+                Job Applications
+              </h3>
+              <button
+                onClick={() => {
+                  const newApp = {
+                    id: Date.now(),
+                    company: 'New Company',
+                    position: 'Data Analyst',
+                    status: 'applied',
+                    appliedDate: new Date().toISOString().split('T')[0],
+                    salary: '65000-75000',
+                    notes: ''
+                  };
+                  setJobApplications(prev => [newApp, ...prev]);
+                }}
+                className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 self-start md:self-auto"
+              >
+                + Add Application
+              </button>
+            </div>
+
+            {jobApplications.length === 0 ? (
+              <div className="text-center py-6 md:py-8 text-gray-500">
+                <span className="text-3xl md:text-4xl block mb-2">🎯</span>
+                <p className="text-sm md:text-base">Ready to start applying?</p>
+                <p className="text-xs md:text-sm">Track your applications here</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {jobApplications.slice(0, 5).map((app) => (
+                  <div key={app.id} className="border rounded-lg p-3">
+                    <div className="flex flex-col md:flex-row md:justify-between md:items-start space-y-2 md:space-y-0">
+                      <div className="flex-1">
+                        <h4 className="font-medium text-gray-800 text-sm md:text-base">{app.position}</h4>
+                        <p className="text-xs md:text-sm text-gray-600">{app.company}</p>
+                        <p className="text-xs text-gray-500">Applied: {app.appliedDate}</p>
+                      </div>
+                      <span className={`px-2 py-1 text-xs rounded self-start ${
+                        app.status === 'interview' ? 'bg-blue-100 text-blue-800' :
+                        app.status === 'offered' ? 'bg-green-100 text-green-800' :
+                        app.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {app.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Interview Preparation */}
+          <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
+            <h3 className="text-lg md:text-xl font-semibold mb-4 flex items-center">
+              <span className="mr-2 md:mr-3">🎤</span>
+              Interview Prep
+            </h3>
+
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-medium text-gray-800 mb-2 text-sm md:text-base">Common Questions</h4>
+                <div className="space-y-2">
+                  {interviewPrep.commonQuestions.slice(0, 3).map((q, index) => (
+                    <div key={index} className="flex items-center justify-between">
+                      <span className="text-xs md:text-sm text-gray-700 flex-1 pr-2">{q.question}</span>
+                      <button
+                        onClick={() => {
+                          setInterviewPrep(prev => ({
+                            ...prev,
+                            commonQuestions: prev.commonQuestions.map((question, i) =>
+                              i === index ? { ...question, practiced: !question.practiced } : question
+                            )
+                          }));
+                        }}
+                        className={`text-lg ${q.practiced ? 'text-green-600' : 'text-gray-400'}`}
+                      >
+                        {q.practiced ? '✅' : '⬜'}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-medium text-gray-800 mb-2 text-sm md:text-base">Technical Skills</h4>
+                <div className="space-y-2">
+                  {interviewPrep.technicalQuestions.slice(0, 2).map((q, index) => (
+                    <div key={index} className="flex items-center justify-between">
+                      <span className="text-xs md:text-sm text-gray-700 flex-1 pr-2">{q.question}</span>
+                      <button
+                        onClick={() => {
+                          setInterviewPrep(prev => ({
+                            ...prev,
+                            technicalQuestions: prev.technicalQuestions.map((question, i) =>
+                              i === index ? { ...question, practiced: !question.practiced } : question
+                            )
+                          }));
+                        }}
+                        className={`text-lg ${q.practiced ? 'text-green-600' : 'text-gray-400'}`}
+                      >
+                        {q.practiced ? '✅' : '⬜'}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="pt-3 border-t">
+                <div className="text-xs md:text-sm text-gray-600">
+                  <div>📊 Progress: {Math.round((interviewPrep.commonQuestions.filter(q => q.practiced).length / interviewPrep.commonQuestions.length) * 100)}% practiced</div>
+                  <div className="mt-1">🎯 Recommendation: Practice 2-3 questions weekly</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Professional Network & Resources */}
+        <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
+          <h3 className="text-lg md:text-xl font-semibold mb-4 flex items-center">
+            <span className="mr-2 md:mr-3">🌐</span>
+            Professional Development
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+            <div>
+              <h4 className="font-medium text-gray-800 mb-3 text-sm md:text-base">Networking Progress</h4>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-xs md:text-sm text-gray-600">LinkedIn Connections</span>
+                  <span className="text-xs md:text-sm font-medium">{professionalNetwork.linkedinConnections}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-xs md:text-sm text-gray-600">Industry Events</span>
+                  <span className="text-xs md:text-sm font-medium">{professionalNetwork.industryEvents}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-xs md:text-sm text-gray-600">Data Communities</span>
+                  <span className="text-xs md:text-sm font-medium">{professionalNetwork.dataCommunitiesMember.length}</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="font-medium text-gray-800 mb-3 text-sm md:text-base">Recommended Communities</h4>
+              <div className="space-y-2 text-xs md:text-sm">
+                <div className="text-gray-700">• r/analytics (Reddit)</div>
+                <div className="text-gray-700">• Data Science Central</div>
+                <div className="text-gray-700">• Kaggle Learn</div>
+                <div className="text-gray-700">• Local Data Science Meetups</div>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="font-medium text-gray-800 mb-3 text-sm md:text-base">Next Steps</h4>
+              <div className="space-y-2 text-xs md:text-sm">
+                <div className="flex items-center text-gray-700">
+                  <span className="mr-2">📱</span>
+                  <span>Update LinkedIn profile</span>
+                </div>
+                <div className="flex items-center text-gray-700">
+                  <span className="mr-2">🗣️</span>
+                  <span>Attend virtual meetup</span>
+                </div>
+                <div className="flex items-center text-gray-700">
+                  <span className="mr-2">💼</span>
+                  <span>Create GitHub portfolio</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
