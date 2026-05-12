@@ -54,7 +54,7 @@
   }
 
   .nav-item-active {
-    @apply bg-brand-600 text-white shadow-sm;
+    @apply bg-brand-600 hover:bg-brand-700 text-white shadow-sm;
   }
 
   .input {
@@ -77,8 +77,6 @@
 /* Circular progress SVG transition */
 .progress-ring-circle {
   transition: stroke-dashoffset 0.6s ease-out;
-  transform: rotate(-90deg);
-  transform-origin: 50% 50%;
 }
 
 /* Sidebar gradient border accent */

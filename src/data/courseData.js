@@ -177,7 +177,7 @@ export const generateResources = (activity) => {
 };
 
 export const getJobMarketData = () => ({
-  totalJobs: 2847 + Math.floor(Math.random() * 200) - 100,
+  totalJobs: 2847,
   averageSalary: 68500,
   salaryGrowth: 18.5,
   topSkills: [

@@ -188,14 +188,17 @@ export default function SchedulePage() {
             )}
           </div>
 
-          <ProgressBar
-            value={stats.overallProgress}
-            color="bg-brand-500"
-            height="h-1.5"
-            rounded="rounded-full"
-            label=""
-          />
-          <span className="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">{stats.overallProgress}% overall</span>
+          <div className="flex items-center gap-2 sm:w-40 w-full">
+            <div className="flex-1">
+              <ProgressBar
+                value={stats.overallProgress}
+                color="bg-brand-500"
+                height="h-1.5"
+                rounded="rounded-full"
+              />
+            </div>
+            <span className="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">{stats.overallProgress}%</span>
+          </div>
         </div>
 
         {/* Week selector grid */}

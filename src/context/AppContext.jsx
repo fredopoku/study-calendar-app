@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import {
   courseModules, generateModuleActivities, generateResources,
@@ -191,7 +191,7 @@ export const AppProvider = ({ children }) => {
   }, [studySchedule, settings.currentWeek, setScheduleStore]);
 
   // ── Stats ─────────────────────────────────────────────────────────────────
-  const stats = (() => {
+  const stats = useMemo(() => {
     if (!studySchedule.length) return { completedSessions: 0, totalSessions: 0, completedDays: 0, totalStudyTime: 0, weekProgress: 0, overallProgress: 0, currentWeek: 1, totalWeeks: 16 };
 
     const activeDays = studySchedule.filter(d => !d.isRestDay);
@@ -210,10 +210,10 @@ export const AppProvider = ({ children }) => {
     const overallProgress = Math.min(Math.round(((completedInPastWeeks + completedSessions) / totalPossibleSessions) * 100), 100);
 
     return { completedSessions, totalSessions, completedDays, totalStudyTime, weekProgress, overallProgress, currentWeek: settings.currentWeek + 1, totalWeeks: 16 };
-  })();
+  }, [studySchedule, settings.currentWeek, settings.completedWeeks]);
 
   // ── Career Readiness ──────────────────────────────────────────────────────
-  const careerReadiness = (() => {
+  const careerReadiness = useMemo(() => {
     const marketData = getJobMarketData();
     const completedSessions = stats.completedSessions + settings.completedWeeks.length * 10;
 
@@ -247,7 +247,7 @@ export const AppProvider = ({ children }) => {
       .sort((a, b) => b.demand * b.salaryImpact - a.demand * a.salaryImpact);
 
     return { readinessScore, matchedJobs, potentialSalaryIncrease: Math.round(potentialSalaryIncrease), currentSkills, skillsMap, nextPrioritySkill: missingSkills[0], marketData };
-  })();
+  }, [stats, settings.currentWeek, settings.completedWeeks]);
 
   // ── Session management ────────────────────────────────────────────────────
   const openSessionModal = (dayId, sessionType, session) => {
@@ -364,7 +364,7 @@ export const AppProvider = ({ children }) => {
   };
 
   // ── AI Recommendations ────────────────────────────────────────────────────
-  const aiRecommendations = (() => {
+  const aiRecommendations = useMemo(() => {
     const recs = [];
     if (stats.weekProgress < 50 && settings.currentWeek > 2) {
       recs.push({ type: 'study', priority: 'high', title: 'Boost Study Consistency', description: `You're at ${stats.weekProgress}% completion this week. Break sessions into 25-min Pomodoro blocks for better retention.`, action: 'Use 25-min focused sessions', impact: 'Improve retention by 40%' });
@@ -385,12 +385,12 @@ export const AppProvider = ({ children }) => {
     }
     recs.push({ type: 'network', priority: 'low', title: 'Expand Your Network', description: 'Connect with data professionals and join analytics communities.', action: 'Join 3 data communities', impact: '60% of jobs come from networking' });
     return recs.sort((a, b) => ({ high: 3, medium: 2, low: 1 }[b.priority] - { high: 3, medium: 2, low: 1 }[a.priority]));
-  })();
+  }, [stats, careerReadiness, portfolioProjects, jobApplications, interviewPrep, settings.currentWeek]);
 
-  const todayPomodoros = (() => {
+  const todayPomodoros = useMemo(() => {
     const today = new Date().toISOString().split('T')[0];
     return pomodoroTotalToday.date === today ? pomodoroTotalToday.count : 0;
-  })();
+  }, [pomodoroTotalToday]);
 
   return (
     <AppContext.Provider value={{
