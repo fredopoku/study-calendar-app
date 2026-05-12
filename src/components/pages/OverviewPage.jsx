@@ -7,7 +7,12 @@ import { getMotivationalMessage, formatMinutes, getWeekStatus } from '../../util
 import { courseModules } from '../../data/courseData';
 
 export default function OverviewPage() {
-  const { stats, careerReadiness, studySchedule, settings, setActiveTab } = useApp();
+  const {
+    stats, careerReadiness, studySchedule, settings, setActiveTab,
+    gamification, currentLevel, xpProgress, xpToNextLevel, isPro,
+    userProfile, currentTrack,
+  } = useApp();
+
   const weekStatus = getWeekStatus(stats.weekProgress);
   const moduleIndex = Math.min(Math.floor(settings.currentWeek / 2), courseModules.length - 1);
   const currentModule = courseModules[moduleIndex];
@@ -18,40 +23,77 @@ export default function OverviewPage() {
   const greeting = (() => {
     const h = new Date().getHours();
     if (h < 12) return 'Good morning';
-    if (h < 18) return 'Good afternoon';
+    if (h < 17) return 'Good afternoon';
     return 'Good evening';
   })();
 
-  return (
-    <div className="space-y-6">
-      {/* Hero welcome card */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-600 via-brand-700 to-violet-700 p-6 text-white shadow-lg">
-        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-        <div className="relative">
-          <p className="text-brand-200 text-sm font-medium mb-1">{greeting}!</p>
-          <h2 className="text-2xl font-bold leading-tight mb-1">{settings.studyGoal}</h2>
-          <p className="text-brand-200 text-sm mb-4">{getMotivationalMessage(careerReadiness.readinessScore, careerReadiness.matchedJobs, careerReadiness.potentialSalaryIncrease)}</p>
+  const name = userProfile?.name ? `, ${userProfile.name}` : '';
+  const studyMinutes = gamification.totalSessions * 45;
 
-          <div className="flex flex-wrap items-center gap-3">
-            <span className={`badge text-xs font-semibold px-3 py-1 rounded-full ${weekStatus.bg} ${weekStatus.color}`}>
-              Week {stats.currentWeek} — {weekStatus.label}
-            </span>
-            <span className="badge bg-white/20 text-white text-xs px-3 py-1 rounded-full">
-              {stats.overallProgress}% course complete
-            </span>
-            <span className="badge bg-white/20 text-white text-xs px-3 py-1 rounded-full">
-              {careerReadiness.matchedJobs.toLocaleString()} jobs matched
-            </span>
+  return (
+    <div className="space-y-5">
+      {/* Hero card */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-600 via-brand-700 to-violet-700 p-6 text-white shadow-lg">
+        <div className="absolute inset-0 opacity-10" style={{
+          backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)',
+          backgroundSize: '40px 40px',
+        }} />
+        <div className="relative">
+          <div className="flex items-start justify-between mb-3">
+            <div>
+              <p className="text-brand-200 text-sm font-medium">{greeting}{name}!</p>
+              <h2 className="text-xl font-bold leading-tight mt-0.5">
+                {userProfile?.trackId === 'custom' && userProfile?.customGoal
+                  ? userProfile.customGoal
+                  : currentTrack?.name || settings.studyGoal}
+              </h2>
+            </div>
+            <div className="text-right flex-shrink-0">
+              <div className="flex items-center gap-1.5 bg-white/15 rounded-xl px-3 py-1.5">
+                <span className="text-lg">{currentLevel.icon}</span>
+                <div>
+                  <p className="text-xs font-bold leading-none">Lv.{currentLevel.level}</p>
+                  <p className="text-[10px] text-brand-200">{currentLevel.name}</p>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Overall progress bar */}
-          <div className="mt-4">
+          <p className="text-brand-200 text-sm mb-4">
+            {getMotivationalMessage(careerReadiness.readinessScore, careerReadiness.matchedJobs, careerReadiness.potentialSalaryIncrease)}
+          </p>
+
+          {/* Streak + badges */}
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            {gamification.streak > 0 && (
+              <span className="flex items-center gap-1 bg-orange-500/30 text-orange-200 text-xs font-semibold px-2.5 py-1 rounded-full">
+                🔥 {gamification.streak}-day streak
+              </span>
+            )}
+            <span className={`badge text-xs font-semibold px-2.5 py-1 rounded-full ${weekStatus.bg} ${weekStatus.color}`}>
+              Week {stats.currentWeek} — {weekStatus.label}
+            </span>
+            <span className="badge bg-white/15 text-white text-xs px-2.5 py-1 rounded-full">
+              {stats.overallProgress}% complete
+            </span>
+            {!isPro && (
+              <button
+                onClick={() => setActiveTab('pricing')}
+                className="badge bg-amber-400/20 hover:bg-amber-400/30 text-amber-200 text-xs px-2.5 py-1 rounded-full transition-colors font-semibold"
+              >
+                ✦ Upgrade to Pro
+              </button>
+            )}
+          </div>
+
+          {/* XP progress bar */}
+          <div>
             <div className="flex justify-between text-xs text-brand-200 mb-1.5">
-              <span>Overall progress</span>
-              <span>{stats.overallProgress}% of 16 weeks</span>
+              <span>{gamification.xp} XP</span>
+              <span>{xpToNextLevel > 0 ? `${xpToNextLevel} XP to Level ${currentLevel.level + 1}` : '🏆 Max Level'}</span>
             </div>
             <div className="w-full bg-white/20 rounded-full h-2 overflow-hidden">
-              <div className="h-2 bg-white rounded-full transition-all duration-700" style={{ width: `${stats.overallProgress}%` }} />
+              <div className="h-2 bg-white rounded-full transition-all duration-700" style={{ width: `${xpProgress}%` }} />
             </div>
           </div>
         </div>
@@ -60,14 +102,14 @@ export default function OverviewPage() {
       {/* Stats grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard label="Week Progress" value={`${stats.weekProgress}%`} sub={`${stats.completedSessions}/${stats.totalSessions} sessions`} icon="📅" accent="indigo" />
-        <StatCard label="Days Done" value={`${stats.completedDays}/7`} sub="this week" icon="✅" accent="emerald" />
-        <StatCard label="Study Time" value={formatMinutes(stats.totalStudyTime)} sub="this week" icon="⏱" accent="violet" />
-        <StatCard label="Career Ready" value={`${careerReadiness.readinessScore}%`} sub={`${careerReadiness.matchedJobs.toLocaleString()} jobs`} icon="🎯" accent="amber" />
+        <StatCard label="Study Streak" value={`${gamification.streak}d`} sub={gamification.streak > 0 ? 'Keep it going!' : 'Start today!'} icon="🔥" accent="amber" />
+        <StatCard label="Total Sessions" value={gamification.totalSessions} sub={formatMinutes(studyMinutes) + ' studied'} icon="📚" accent="emerald" />
+        <StatCard label="Career Ready" value={`${careerReadiness.readinessScore}%`} sub={`${careerReadiness.matchedJobs?.toLocaleString()} jobs`} icon="🎯" accent="violet" />
       </div>
 
       {/* Middle row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Current module card */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {/* Current track/module */}
         <div className="card p-5">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-3">Current Module</p>
           <div className="flex items-start gap-3 mb-4">
@@ -77,7 +119,7 @@ export default function OverviewPage() {
               <p className={`text-xs mt-1 font-medium ${currentModule.textColor}`}>Module {moduleIndex + 1} of 8</p>
             </div>
           </div>
-          <ProgressBar value={stats.weekProgress} color={`${currentModule.color.replace('bg-', 'bg-')}`} label="This week" />
+          <ProgressBar value={stats.weekProgress} color={currentModule.color} label="This week" />
           <button
             onClick={() => setActiveTab('schedule')}
             className="mt-4 w-full btn-primary text-xs py-2 rounded-xl"
@@ -86,10 +128,10 @@ export default function OverviewPage() {
           </button>
         </div>
 
-        {/* Career readiness circle */}
+        {/* Career readiness */}
         <div className="card p-5 flex flex-col items-center text-center">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-4">Career Readiness</p>
-          <CircularProgress value={careerReadiness.readinessScore} size={120} strokeWidth={10} color="#4f46e5" trackColor="rgb(226 232 240)">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-3">Career Readiness</p>
+          <CircularProgress value={careerReadiness.readinessScore} size={110} strokeWidth={10} color="#4f46e5">
             <div>
               <div className="text-2xl font-bold text-slate-900 dark:text-white">{careerReadiness.readinessScore}%</div>
               <div className="text-[10px] text-slate-500 dark:text-slate-400">ready</div>
@@ -97,15 +139,15 @@ export default function OverviewPage() {
           </CircularProgress>
           <div className="mt-3 space-y-1 w-full">
             <div className="flex justify-between text-xs">
-              <span className="text-slate-500 dark:text-slate-400">Potential salary lift</span>
-              <span className="font-semibold text-emerald-600 dark:text-emerald-400">+${careerReadiness.potentialSalaryIncrease.toLocaleString()}</span>
+              <span className="text-slate-500 dark:text-slate-400">Salary lift potential</span>
+              <span className="font-semibold text-emerald-600 dark:text-emerald-400">+${careerReadiness.potentialSalaryIncrease?.toLocaleString()}</span>
             </div>
             <div className="flex justify-between text-xs">
-              <span className="text-slate-500 dark:text-slate-400">Matched jobs</span>
-              <span className="font-semibold text-brand-600 dark:text-brand-400">{careerReadiness.matchedJobs.toLocaleString()}</span>
+              <span className="text-slate-500 dark:text-slate-400">Jobs matched</span>
+              <span className="font-semibold text-brand-600 dark:text-brand-400">{careerReadiness.matchedJobs?.toLocaleString()}</span>
             </div>
           </div>
-          <button onClick={() => setActiveTab('career')} className="mt-4 w-full btn-secondary text-xs py-2 rounded-xl">
+          <button onClick={() => setActiveTab('career')} className="mt-3 w-full btn-secondary text-xs py-2 rounded-xl">
             Career Dashboard →
           </button>
         </div>
@@ -117,11 +159,36 @@ export default function OverviewPage() {
         </div>
       </div>
 
+      {/* AI Tutor CTA */}
+      <div className="rounded-2xl bg-gradient-to-r from-violet-600 to-brand-600 p-5 text-white relative overflow-hidden">
+        <div className="absolute right-4 top-0 text-7xl opacity-10 select-none">🤖</div>
+        <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xl">🤖</span>
+              <h3 className="font-bold text-lg">Your AI Tutor is Ready</h3>
+            </div>
+            <p className="text-violet-200 text-sm">
+              Stuck? Curious? Ask your AI tutor anything about your studies — get clear, instant explanations.
+            </p>
+            {!isPro && (
+              <p className="text-violet-300 text-xs mt-1">3 free questions per day. Upgrade for unlimited.</p>
+            )}
+          </div>
+          <button
+            onClick={() => setActiveTab('ai-tutor')}
+            className="flex-shrink-0 bg-white text-violet-700 font-semibold px-5 py-2.5 rounded-xl hover:bg-violet-50 transition-colors text-sm"
+          >
+            Ask AI Tutor →
+          </button>
+        </div>
+      </div>
+
       {/* Today's plan */}
       <div className="card p-5">
         <div className="flex items-center justify-between mb-4">
           <h3 className="section-title">
-            {todayEntry ? `Today — ${todayEntry.date} (${todayEntry.day})` : "Today's Plan"}
+            {todayEntry ? `Today — ${todayEntry.date}` : "Today's Plan"}
           </h3>
           <button onClick={() => setActiveTab('schedule')} className="text-xs text-brand-600 dark:text-brand-400 hover:underline font-medium">
             Full schedule →
@@ -129,58 +196,114 @@ export default function OverviewPage() {
         </div>
 
         {!todayEntry ? (
-          <p className="text-sm text-slate-500 dark:text-slate-400">No sessions scheduled for today. Enjoy your rest!</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">No sessions scheduled today. Rest up!</p>
         ) : todayEntry.isRestDay ? (
           <div className="flex items-center gap-3 p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
             <span className="text-2xl">🌿</span>
             <div>
               <p className="font-medium text-emerald-800 dark:text-emerald-300">Rest Day</p>
-              <p className="text-xs text-emerald-600 dark:text-emerald-400">Well-deserved break — see you Monday!</p>
+              <p className="text-xs text-emerald-600 dark:text-emerald-400">Well-deserved break — see you tomorrow!</p>
             </div>
           </div>
         ) : (
           <div className="space-y-3">
             {todayEntry.morningSession && (
-              <div className={`flex items-center gap-4 p-4 rounded-xl border transition-all ${todayEntry.morningSession.completed ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800' : 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800'}`}>
+              <div className={`flex items-center gap-4 p-4 rounded-xl border transition-all ${todayEntry.morningSession.completed ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800' : 'bg-orange-50 dark:bg-orange-900/10 border-orange-200 dark:border-orange-800'}`}>
                 <span className="text-xl flex-shrink-0">{todayEntry.morningSession.completed ? '✅' : '🌅'}</span>
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-semibold text-orange-600 dark:text-orange-400">{todayEntry.morningSession.time}</p>
                   <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">{todayEntry.morningSession.activity}</p>
                 </div>
-                {todayEntry.morningSession.completed && <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex-shrink-0">Done</span>}
+                {todayEntry.morningSession.completed
+                  ? <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex-shrink-0">Done ✓</span>
+                  : <button onClick={() => setActiveTab('schedule')} className="text-xs text-brand-600 dark:text-brand-400 font-medium flex-shrink-0 hover:underline">Start</button>
+                }
               </div>
             )}
             {todayEntry.eveningSession && (
-              <div className={`flex items-center gap-4 p-4 rounded-xl border transition-all ${todayEntry.eveningSession.completed ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800' : 'bg-violet-50 dark:bg-violet-900/20 border-violet-200 dark:border-violet-800'}`}>
+              <div className={`flex items-center gap-4 p-4 rounded-xl border transition-all ${todayEntry.eveningSession.completed ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800' : 'bg-violet-50 dark:bg-violet-900/10 border-violet-200 dark:border-violet-800'}`}>
                 <span className="text-xl flex-shrink-0">{todayEntry.eveningSession.completed ? '✅' : '🌙'}</span>
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-semibold text-violet-600 dark:text-violet-400">{todayEntry.eveningSession.time}</p>
                   <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">{todayEntry.eveningSession.activity}</p>
                 </div>
-                {todayEntry.eveningSession.completed && <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex-shrink-0">Done</span>}
+                {todayEntry.eveningSession.completed
+                  ? <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex-shrink-0">Done ✓</span>
+                  : <button onClick={() => setActiveTab('schedule')} className="text-xs text-brand-600 dark:text-brand-400 font-medium flex-shrink-0 hover:underline">Start</button>
+                }
               </div>
             )}
           </div>
         )}
       </div>
 
-      {/* Skills preview */}
-      <div className="card p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="section-title">Skills Being Built</h3>
-          <button onClick={() => setActiveTab('career')} className="text-xs text-brand-600 dark:text-brand-400 hover:underline font-medium">See all →</button>
+      {/* Quick stats row */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* Skills */}
+        <div className="card p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Skills Building</h3>
+            <button onClick={() => setActiveTab('career')} className="text-[10px] text-brand-500 hover:underline">See all</button>
+          </div>
+          <div className="space-y-2">
+            {careerReadiness.currentSkills?.slice(0, 3).map(([skill, level]) => {
+              const pct = { 'Advanced': 100, 'Intermediate': 65, 'Beginner': 30 }[level] || 0;
+              return (
+                <div key={skill}>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-slate-600 dark:text-slate-300 font-medium">{skill}</span>
+                    <span className="text-slate-400">{level}</span>
+                  </div>
+                  <ProgressBar value={pct} color="bg-brand-500" height="h-1.5" />
+                </div>
+              );
+            })}
+          </div>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {careerReadiness.currentSkills.slice(0, 4).map(([skill, level]) => {
-            const levelPct = { 'Advanced': 100, 'Intermediate': 65, 'Beginner': 30 }[level] || 0;
-            return (
-              <div key={skill} className="bg-slate-50 dark:bg-slate-700/40 rounded-xl p-3">
-                <p className="text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1">{skill}</p>
-                <ProgressBar value={levelPct} color="bg-brand-500" height="h-1.5" />
-                <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">{level}</p>
-              </div>
-            );
-          })}
+
+        {/* Achievements preview */}
+        <div className="card p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Achievements</h3>
+            <button onClick={() => setActiveTab('analytics')} className="text-[10px] text-brand-500 hover:underline">View all</button>
+          </div>
+          {gamification.achievements?.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {gamification.achievements.slice(0, 6).map(id => {
+                const a = require('../../utils/gamification').ACHIEVEMENTS.find(x => x.id === id);
+                return a ? (
+                  <span key={id} title={a.name} className="text-xl" role="img" aria-label={a.name}>{a.icon}</span>
+                ) : null;
+              })}
+            </div>
+          ) : (
+            <p className="text-xs text-slate-400 dark:text-slate-500">Complete sessions to unlock achievements!</p>
+          )}
+          <p className="text-[10px] text-slate-400 mt-2">{gamification.achievements?.length || 0} unlocked</p>
+        </div>
+
+        {/* Quick actions */}
+        <div className="card p-4">
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-3">Quick Actions</h3>
+          <div className="space-y-2">
+            {[
+              { icon: '🤖', label: 'Ask AI Tutor', tab: 'ai-tutor' },
+              { icon: '📅', label: 'View Schedule', tab: 'schedule' },
+              { icon: '💼', label: 'Career Hub', tab: 'career' },
+            ].map(a => (
+              <button
+                key={a.tab}
+                onClick={() => setActiveTab(a.tab)}
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors text-left"
+              >
+                <span className="text-base">{a.icon}</span>
+                <span className="text-xs font-medium text-slate-700 dark:text-slate-200">{a.label}</span>
+                <svg className="w-3.5 h-3.5 ml-auto text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </div>

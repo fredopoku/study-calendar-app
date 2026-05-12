@@ -2,37 +2,62 @@ import { useApp } from '../../context/AppContext';
 import PomodoroTimer from '../timer/PomodoroTimer';
 
 const navItems = [
-  { id: 'overview', label: 'Overview', icon: (
-    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-    </svg>
-  )},
-  { id: 'schedule', label: 'Study Schedule', icon: (
-    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-    </svg>
-  )},
-  { id: 'career', label: 'Career Hub', icon: (
-    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-    </svg>
-  )},
+  {
+    id: 'overview', label: 'Overview', icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+      </svg>
+    ),
+  },
+  {
+    id: 'schedule', label: 'Study Schedule', icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      </svg>
+    ),
+  },
+  {
+    id: 'ai-tutor', label: 'AI Tutor', icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+      </svg>
+    ),
+    badge: 'AI',
+  },
+  {
+    id: 'career', label: 'Career Hub', icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+      </svg>
+    ),
+  },
+  {
+    id: 'analytics', label: 'Analytics', icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+      </svg>
+    ),
+  },
+  {
+    id: 'pricing', label: 'Upgrade', icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+      </svg>
+    ),
+    badge: 'PRO',
+  },
 ];
 
 export default function Sidebar() {
-  const { activeTab, setActiveTab, darkMode, setDarkMode, stats, sidebarOpen, setSidebarOpen, settings } = useApp();
+  const { activeTab, setActiveTab, darkMode, setDarkMode, stats, sidebarOpen, setSidebarOpen, settings, gamification, currentLevel, xpProgress, isPro, userProfile } = useApp();
 
   return (
     <>
-      {/* Overlay for mobile */}
+      {/* Mobile overlay */}
       {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
+        <div className="fixed inset-0 bg-black/50 z-30 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
-      {/* Sidebar */}
       <aside className={`
         fixed top-0 left-0 h-full w-64 z-40 flex flex-col
         bg-slate-900 border-r border-slate-800
@@ -41,63 +66,105 @@ export default function Sidebar() {
         lg:translate-x-0 lg:static lg:z-auto
       `}>
         {/* Logo */}
-        <div className="px-5 py-5 border-b border-slate-800">
+        <div className="px-5 py-4 border-b border-slate-800">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center flex-shrink-0 shadow-sm">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-violet-600 flex items-center justify-center flex-shrink-0 shadow-sm">
               <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </div>
             <div>
-              <p className="text-sm font-bold text-white leading-none">Study Calendar</p>
-              <p className="text-[10px] text-slate-400 mt-0.5">Pro Edition</p>
+              <p className="text-sm font-bold text-white leading-none">LearnForge</p>
+              <p className="text-[10px] text-slate-400 mt-0.5">
+                {isPro ? (
+                  <span className="text-amber-400 font-semibold">✦ Pro Member</span>
+                ) : 'AI-Powered Learning'}
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Course progress pill */}
-        <div className="px-4 pt-4">
-          <div className="bg-slate-800 rounded-xl p-3">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Course Progress</span>
-              <span className="text-[10px] font-bold text-brand-400">Week {stats.currentWeek}/16</span>
+        {/* User level + XP */}
+        {userProfile && (
+          <div className="px-4 pt-3">
+            <div className="bg-slate-800 rounded-xl p-3">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-lg">{currentLevel.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-bold text-white truncate">{userProfile.name}</p>
+                  <p className={`text-[10px] ${currentLevel.color}`}>Lv.{currentLevel.level} {currentLevel.name}</p>
+                </div>
+                {gamification.streak > 0 && (
+                  <div className="flex items-center gap-0.5 bg-orange-500/20 px-1.5 py-0.5 rounded-lg">
+                    <span className="text-xs">🔥</span>
+                    <span className="text-[10px] font-bold text-orange-400">{gamification.streak}</span>
+                  </div>
+                )}
+              </div>
+              <div className="w-full bg-slate-700 rounded-full h-1.5 overflow-hidden">
+                <div
+                  className="h-1.5 rounded-full bg-gradient-to-r from-brand-500 to-violet-500 transition-all duration-700"
+                  style={{ width: `${xpProgress}%` }}
+                />
+              </div>
+              <p className="text-[10px] text-slate-500 mt-1">{gamification.xp} XP total</p>
             </div>
-            <div className="w-full bg-slate-700 rounded-full h-1.5 overflow-hidden">
-              <div
-                className="h-1.5 rounded-full bg-gradient-to-r from-brand-500 to-violet-500 transition-all duration-700"
-                style={{ width: `${stats.overallProgress}%` }}
-              />
-            </div>
-            <p className="text-[10px] text-slate-500 mt-1.5">{stats.overallProgress}% complete — {16 - settings.currentWeek} weeks left</p>
           </div>
-        </div>
+        )}
+
+        {/* Course progress */}
+        {!userProfile && (
+          <div className="px-4 pt-3">
+            <div className="bg-slate-800 rounded-xl p-3">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Course Progress</span>
+                <span className="text-[10px] font-bold text-brand-400">Week {stats.currentWeek}/16</span>
+              </div>
+              <div className="w-full bg-slate-700 rounded-full h-1.5 overflow-hidden">
+                <div className="h-1.5 rounded-full bg-gradient-to-r from-brand-500 to-violet-500 transition-all duration-700" style={{ width: `${stats.overallProgress}%` }} />
+              </div>
+              <p className="text-[10px] text-slate-500 mt-1.5">{stats.overallProgress}% — {16 - settings.currentWeek} weeks left</p>
+            </div>
+          </div>
+        )}
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-3 space-y-1 overflow-y-auto">
-          {navItems.map(item => (
-            <button
-              key={item.id}
-              onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
-              className={`w-full nav-item ${activeTab === item.id ? 'nav-item-active' : ''}`}
-            >
-              {item.icon}
-              <span>{item.label}</span>
-              {item.id === 'schedule' && stats.weekProgress > 0 && stats.weekProgress < 100 && (
-                <span className="ml-auto text-[10px] bg-brand-500/20 text-brand-400 px-1.5 py-0.5 rounded-full">
-                  {stats.weekProgress}%
-                </span>
-              )}
-            </button>
-          ))}
+        <nav className="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto">
+          {navItems.map(item => {
+            const isActive = activeTab === item.id;
+            const isUpgrade = item.id === 'pricing';
+            return (
+              <button
+                key={item.id}
+                onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
+                className={`w-full nav-item ${isActive ? 'nav-item-active' : ''} ${isUpgrade && !isPro ? 'text-amber-400 hover:text-amber-300' : ''}`}
+              >
+                {item.icon}
+                <span>{item.label}</span>
+                {item.id === 'ai-tutor' && !isPro && (
+                  <span className="ml-auto text-[9px] bg-brand-500/20 text-brand-400 px-1.5 py-0.5 rounded-full font-bold">AI</span>
+                )}
+                {item.id === 'pricing' && isPro && (
+                  <span className="ml-auto text-[9px] bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded-full font-bold">PRO</span>
+                )}
+                {item.id === 'pricing' && !isPro && (
+                  <span className="ml-auto text-[9px] bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded-full font-bold">✦</span>
+                )}
+                {item.id === 'schedule' && stats.weekProgress > 0 && stats.weekProgress < 100 && !isActive && (
+                  <span className="ml-auto text-[10px] bg-brand-500/20 text-brand-400 px-1.5 py-0.5 rounded-full">{stats.weekProgress}%</span>
+                )}
+              </button>
+            );
+          })}
         </nav>
 
-        {/* Timer section */}
-        <div className="px-4 py-4 border-t border-slate-800">
+        {/* Timer */}
+        <div className="px-4 py-3 border-t border-slate-800">
           <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 mb-3">Focus Timer</p>
           <PomodoroTimer compact />
         </div>
 
-        {/* Dark mode + bottom */}
+        {/* Dark mode */}
         <div className="px-4 py-3 border-t border-slate-800">
           <button
             onClick={() => setDarkMode(d => !d)}

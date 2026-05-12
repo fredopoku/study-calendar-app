@@ -4,6 +4,12 @@ import {
   courseModules, generateModuleActivities, generateResources,
   getJobMarketData, defaultPortfolioProjects, defaultInterviewPrep,
 } from '../data/courseData';
+import { learningTracks } from '../data/learningTracks';
+import { getAIResponse } from '../data/mockAI';
+import {
+  ACHIEVEMENTS, XP_REWARDS, getLevelFromXP, getXPProgress, getXPToNextLevel,
+  checkNewAchievements, updateStreak,
+} from '../utils/gamification';
 
 const AppContext = createContext(null);
 
@@ -30,6 +36,24 @@ export const AppProvider = ({ children }) => {
   const [interviewPrep, setInterviewPrep] = useLocalStorage('scp_interview', defaultInterviewPrep);
   const [notificationsEnabled, setNotificationsEnabled] = useLocalStorage('scp_notifs', false);
   const [pomodoroTotalToday, setPomodoroTotalToday] = useLocalStorage('scp_pomodoro_today', { date: '', count: 0 });
+
+  // ── LearnForge: new persisted state ──────────────────────────────────────
+  const [userProfile, setUserProfile] = useLocalStorage('lf_profile', null);
+  const [gamification, setGamification] = useLocalStorage('lf_gamification', {
+    xp: 0,
+    streak: 0,
+    lastStudyDate: '',
+    achievements: [],
+    totalSessions: 0,
+    totalPomodoros: 0,
+    totalStudyMinutes: 0,
+    weeksCompleted: 0,
+    totalAIMessages: 0,
+    notesAdded: 0,
+  });
+  const [aiChats, setAiChats] = useLocalStorage('lf_ai_chats', []);
+  const [aiUsageToday, setAiUsageToday] = useLocalStorage('lf_ai_usage', { date: '', count: 0 });
+  const [subscription, setSubscription] = useLocalStorage('lf_subscription', { plan: 'free', startDate: null });
 
   // ── UI state (not persisted) ──────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState('overview');
@@ -271,7 +295,15 @@ export const AppProvider = ({ children }) => {
     }));
     setShowSessionModal(false);
     setPomodoroCount(0);
-    showToast('Session completed! Great work.', 'success');
+
+    // Award XP
+    let xp = XP_REWARDS.sessionComplete;
+    if (sessionDifficulty >= 3) xp += XP_REWARDS.difficultyBonus[sessionDifficulty] || 0;
+    if (sessionNotes?.trim()) xp += XP_REWARDS.noteAdded;
+    earnXP(xp);
+    recordStudySession(sessionNotes);
+
+    showToast(`Session complete! +${xp} XP earned`, 'success');
   };
 
   const toggleSession = (dayId, sessionType) => {
@@ -310,6 +342,36 @@ export const AppProvider = ({ children }) => {
     setShowWeekSelector(false);
   };
 
+  // ── Gamification functions (defined before timer to avoid use-before-define) ─
+  const earnXP = useCallback((amount) => {
+    setGamification(prev => {
+      const updated = { ...prev, xp: prev.xp + amount };
+      const newAchievements = checkNewAchievements(updated);
+      if (newAchievements.length) {
+        const found = ACHIEVEMENTS.find(a => a.id === newAchievements[0]);
+        if (found) {
+          setTimeout(() => showToast(`Achievement unlocked: ${found.icon} ${found.name}!`, 'success'), 500);
+          updated.xp += found.xpReward;
+        }
+        updated.achievements = [...(prev.achievements || []), ...newAchievements];
+      }
+      return updated;
+    });
+  }, [setGamification]);
+
+  const recordStudySession = useCallback((notes) => {
+    setGamification(prev => {
+      const updated = updateStreak({ ...prev, totalSessions: prev.totalSessions + 1 });
+      if (notes?.trim()) updated.notesAdded = (prev.notesAdded || 0) + 1;
+      return updated;
+    });
+  }, [setGamification]);
+
+  const recordPomodoro = useCallback(() => {
+    setGamification(prev => ({ ...prev, totalPomodoros: prev.totalPomodoros + 1 }));
+    earnXP(XP_REWARDS.pomodoroComplete);
+  }, [earnXP, setGamification]);
+
   // ── Timer ─────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (timerActive && !timerPaused) {
@@ -328,6 +390,7 @@ export const AppProvider = ({ children }) => {
               setPomodoroCount(c => c + 1);
               const today = new Date().toISOString().split('T')[0];
               setPomodoroTotalToday(p => ({ date: today, count: p.date === today ? p.count + 1 : 1 }));
+              recordPomodoro();
               setIsBreakTime(true);
               setTimeLeft(5 * 60);
               if (notificationsEnabled && Notification.permission === 'granted') {
@@ -344,7 +407,7 @@ export const AppProvider = ({ children }) => {
       clearInterval(timerRef.current);
     }
     return () => clearInterval(timerRef.current);
-  }, [timerActive, timerPaused, isBreakTime, notificationsEnabled, setPomodoroTotalToday]);
+  }, [timerActive, timerPaused, isBreakTime, notificationsEnabled, setPomodoroTotalToday, recordPomodoro]);
 
   const startTimer = () => { setTimerActive(true); setTimerPaused(false); };
   const pauseTimer = () => setTimerPaused(p => !p);
@@ -392,8 +455,69 @@ export const AppProvider = ({ children }) => {
     return pomodoroTotalToday.date === today ? pomodoroTotalToday.count : 0;
   }, [pomodoroTotalToday]);
 
+  // ── LearnForge computed values ────────────────────────────────────────────
+  const isPro = subscription.plan === 'pro';
+
+  const currentTrack = useMemo(() => {
+    if (!userProfile?.trackId) return learningTracks[0];
+    return learningTracks.find(t => t.id === userProfile.trackId) || learningTracks[0];
+  }, [userProfile]);
+
+  const currentLevel = useMemo(() => getLevelFromXP(gamification.xp), [gamification.xp]);
+  const xpProgress = useMemo(() => getXPProgress(gamification.xp), [gamification.xp]);
+  const xpToNextLevel = useMemo(() => getXPToNextLevel(gamification.xp), [gamification.xp]);
+
+  const aiMessagesLeft = useMemo(() => {
+    if (isPro) return 999;
+    const today = new Date().toISOString().split('T')[0];
+    const used = aiUsageToday.date === today ? aiUsageToday.count : 0;
+    return Math.max(0, 3 - used);
+  }, [isPro, aiUsageToday]);
+
+  // ── LearnForge functions ──────────────────────────────────────────────────
+  const completeOnboarding = useCallback((profile) => {
+    setUserProfile(profile);
+    if (profile.trackId !== 'data-analytics' && profile.trackId !== settings.trackId) {
+      setScheduleStore({});
+    }
+    showToast(`Welcome to LearnForge! Your ${profile.trackName} plan is ready.`, 'success');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setUserProfile, setScheduleStore, settings]);
+
+  const sendAIMessage = useCallback((message) => {
+    const today = new Date().toISOString().split('T')[0];
+    if (!isPro) {
+      const used = aiUsageToday.date === today ? aiUsageToday.count : 0;
+      if (used >= 3) return false;
+    }
+
+    const userMsg = { id: Date.now(), role: 'user', content: message, timestamp: new Date().toISOString() };
+    const response = getAIResponse(message);
+    const aiMsg = { id: Date.now() + 1, role: 'assistant', content: response, timestamp: new Date().toISOString() };
+
+    setAiChats(prev => [...prev, userMsg, aiMsg]);
+    setAiUsageToday(prev => ({ date: today, count: prev.date === today ? prev.count + 1 : 1 }));
+    setGamification(prev => ({ ...prev, totalAIMessages: (prev.totalAIMessages || 0) + 1 }));
+    earnXP(XP_REWARDS.aiChat);
+    return true;
+  }, [isPro, aiUsageToday, earnXP, setAiChats, setAiUsageToday, setGamification]);
+
+  const clearAIChats = useCallback(() => setAiChats([]), [setAiChats]);
+
+  const upgradeToPro = useCallback(() => {
+    setSubscription({ plan: 'pro', startDate: new Date().toISOString() });
+    showToast('Welcome to Pro! All features unlocked.', 'success');
+    earnXP(200);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setSubscription, earnXP]);
+
+  const downgradeToFree = useCallback(() => {
+    setSubscription({ plan: 'free', startDate: null });
+  }, [setSubscription]);
+
   return (
     <AppContext.Provider value={{
+      // Core
       settings, setSettings,
       darkMode, setDarkMode,
       studySchedule,
@@ -403,6 +527,7 @@ export const AppProvider = ({ children }) => {
       jobApplications, setJobApplications,
       interviewPrep, setInterviewPrep,
       notificationsEnabled, setNotificationsEnabled, requestNotifications,
+      // Navigation / UI
       activeTab, setActiveTab,
       showWeekSelector, setShowWeekSelector,
       showSessionModal, setShowSessionModal,
@@ -412,13 +537,36 @@ export const AppProvider = ({ children }) => {
       selectedTechnique, setSelectedTechnique,
       sidebarOpen, setSidebarOpen,
       toast,
+      // Timer
       timerActive, timerPaused, timeLeft, isBreakTime,
       pomodoroCount, todayPomodoros,
       startTimer, pauseTimer, stopTimer,
+      // Session
       toggleSession, saveSession,
       goToNextWeek, goToPreviousWeek, jumpToWeek,
       aiRecommendations,
       showToast,
+      // LearnForge: user & onboarding
+      userProfile, setUserProfile,
+      completeOnboarding,
+      currentTrack,
+      learningTracks,
+      // LearnForge: gamification
+      gamification,
+      currentLevel,
+      xpProgress,
+      xpToNextLevel,
+      earnXP,
+      // LearnForge: AI tutor
+      aiChats,
+      aiMessagesLeft,
+      sendAIMessage,
+      clearAIChats,
+      // LearnForge: subscription
+      subscription,
+      isPro,
+      upgradeToPro,
+      downgradeToFree,
     }}>
       {children}
     </AppContext.Provider>
