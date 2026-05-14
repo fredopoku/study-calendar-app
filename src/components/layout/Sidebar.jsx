@@ -50,7 +50,7 @@ const navItems = [
 ];
 
 export default function Sidebar() {
-  const { activeTab, setActiveTab, darkMode, setDarkMode, stats, sidebarOpen, setSidebarOpen, settings, gamification, currentLevel, xpProgress, isPro, userProfile, logout } = useApp();
+  const { activeTab, setActiveTab, darkMode, setDarkMode, stats, sidebarOpen, setSidebarOpen, settings, gamification, currentLevel, xpProgress, isPro, userProfile, logout, switchTrack } = useApp();
   const [confirmingLogout, setConfirmingLogout] = useState(false);
 
   return (
@@ -187,22 +187,34 @@ export default function Sidebar() {
           {/* Sign out */}
           {userProfile && (
             confirmingLogout ? (
-              <div className="px-3 py-2.5 rounded-xl bg-rose-900/30 border border-rose-800/50">
-                <p className="text-xs text-rose-300 mb-2 font-medium">Reset all progress?</p>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => { logout(); setConfirmingLogout(false); }}
-                    className="flex-1 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold transition-colors"
-                  >
-                    Yes, sign out
-                  </button>
-                  <button
-                    onClick={() => setConfirmingLogout(false)}
-                    className="flex-1 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs font-medium transition-colors"
-                  >
-                    Cancel
-                  </button>
-                </div>
+              <div className="rounded-xl bg-slate-800 border border-slate-700 p-3">
+                <p className="text-xs font-semibold text-white mb-0.5">Leave LearnForge?</p>
+                <p className="text-[10px] text-slate-400 mb-3">Choose what happens to your progress.</p>
+
+                {/* Switch track option */}
+                <button
+                  onClick={() => { switchTrack(); setConfirmingLogout(false); }}
+                  className="w-full text-left p-2.5 rounded-lg bg-brand-900/50 hover:bg-brand-900/80 border border-brand-700/50 transition-colors mb-2"
+                >
+                  <p className="text-xs font-semibold text-brand-300">Switch Course</p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">Keep XP & achievements, pick a new track</p>
+                </button>
+
+                {/* Full reset option */}
+                <button
+                  onClick={() => { logout(); setConfirmingLogout(false); }}
+                  className="w-full text-left p-2.5 rounded-lg bg-rose-900/30 hover:bg-rose-900/50 border border-rose-800/50 transition-colors mb-2"
+                >
+                  <p className="text-xs font-semibold text-rose-400">Start Fresh</p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">Reset all progress and data</p>
+                </button>
+
+                <button
+                  onClick={() => setConfirmingLogout(false)}
+                  className="w-full py-1.5 rounded-lg text-slate-500 hover:text-slate-300 text-xs transition-colors text-center"
+                >
+                  Cancel
+                </button>
               </div>
             ) : (
               <button

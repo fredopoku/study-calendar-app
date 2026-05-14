@@ -515,6 +515,13 @@ export const AppProvider = ({ children }) => {
     setSubscription({ plan: 'free', startDate: null });
   }, [setSubscription]);
 
+  const switchTrack = useCallback(() => {
+    setUserProfile(null);
+    setScheduleStore({});
+    setAiChats([]);
+    setSettings(prev => ({ ...prev, currentWeek: 0, completedWeeks: [] }));
+  }, [setUserProfile, setScheduleStore, setAiChats, setSettings]);
+
   const logout = useCallback(() => {
     setUserProfile(null);
     setGamification({ xp: 0, streak: 0, lastStudyDate: '', achievements: [], totalSessions: 0, totalPomodoros: 0, totalStudyMinutes: 0, weeksCompleted: 0, totalAIMessages: 0, notesAdded: 0 });
@@ -577,6 +584,7 @@ export const AppProvider = ({ children }) => {
       isPro,
       upgradeToPro,
       downgradeToFree,
+      switchTrack,
       logout,
     }}>
       {children}
