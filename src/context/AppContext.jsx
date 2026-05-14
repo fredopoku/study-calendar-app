@@ -515,6 +515,16 @@ export const AppProvider = ({ children }) => {
     setSubscription({ plan: 'free', startDate: null });
   }, [setSubscription]);
 
+  const logout = useCallback(() => {
+    setUserProfile(null);
+    setGamification({ xp: 0, streak: 0, lastStudyDate: '', achievements: [], totalSessions: 0, totalPomodoros: 0, totalStudyMinutes: 0, weeksCompleted: 0, totalAIMessages: 0, notesAdded: 0 });
+    setAiChats([]);
+    setAiUsageToday({ date: '', count: 0 });
+    setSubscription({ plan: 'free', startDate: null });
+    setScheduleStore({});
+    setSettings({ currentWeek: 0, completedWeeks: [], studyGoal: 'Google Data Analytics Certificate', studyHoursPerWeek: 15 });
+  }, [setUserProfile, setGamification, setAiChats, setAiUsageToday, setSubscription, setScheduleStore, setSettings]);
+
   return (
     <AppContext.Provider value={{
       // Core
@@ -567,6 +577,7 @@ export const AppProvider = ({ children }) => {
       isPro,
       upgradeToPro,
       downgradeToFree,
+      logout,
     }}>
       {children}
     </AppContext.Provider>

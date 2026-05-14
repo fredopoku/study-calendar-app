@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import PomodoroTimer from '../timer/PomodoroTimer';
 
@@ -49,7 +50,8 @@ const navItems = [
 ];
 
 export default function Sidebar() {
-  const { activeTab, setActiveTab, darkMode, setDarkMode, stats, sidebarOpen, setSidebarOpen, settings, gamification, currentLevel, xpProgress, isPro, userProfile } = useApp();
+  const { activeTab, setActiveTab, darkMode, setDarkMode, stats, sidebarOpen, setSidebarOpen, settings, gamification, currentLevel, xpProgress, isPro, userProfile, logout } = useApp();
+  const [confirmingLogout, setConfirmingLogout] = useState(false);
 
   return (
     <>
@@ -164,8 +166,8 @@ export default function Sidebar() {
           <PomodoroTimer compact />
         </div>
 
-        {/* Dark mode */}
-        <div className="px-4 py-3 border-t border-slate-800">
+        {/* Dark mode + Sign out */}
+        <div className="px-4 py-3 border-t border-slate-800 space-y-1">
           <button
             onClick={() => setDarkMode(d => !d)}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-all text-sm font-medium"
@@ -181,6 +183,39 @@ export default function Sidebar() {
             )}
             <span>{darkMode ? 'Light Mode' : 'Dark Mode'}</span>
           </button>
+
+          {/* Sign out */}
+          {userProfile && (
+            confirmingLogout ? (
+              <div className="px-3 py-2.5 rounded-xl bg-rose-900/30 border border-rose-800/50">
+                <p className="text-xs text-rose-300 mb-2 font-medium">Reset all progress?</p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => { logout(); setConfirmingLogout(false); }}
+                    className="flex-1 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold transition-colors"
+                  >
+                    Yes, sign out
+                  </button>
+                  <button
+                    onClick={() => setConfirmingLogout(false)}
+                    className="flex-1 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs font-medium transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setConfirmingLogout(true)}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:text-rose-400 hover:bg-rose-900/20 transition-all text-sm font-medium"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                <span>Sign Out</span>
+              </button>
+            )
+          )}
         </div>
       </aside>
     </>
