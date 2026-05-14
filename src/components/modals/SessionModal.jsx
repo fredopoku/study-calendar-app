@@ -1,10 +1,13 @@
 import { useApp } from '../../context/AppContext';
 import { studyTechniques } from '../../data/courseData';
+import { IconStar, IconX, IconSun, IconMoon } from '../ui/Icons';
 
 export default function SessionModal() {
   const { showSessionModal, setShowSessionModal, selectedSession, sessionNotes, setSessionNotes, sessionDifficulty, setSessionDifficulty, selectedTechnique, setSelectedTechnique, saveSession, careerReadiness } = useApp();
 
   if (!showSessionModal || !selectedSession) return null;
+
+  const isMorning = selectedSession.sessionType === 'morning';
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={e => e.target === e.currentTarget && setShowSessionModal(false)}>
@@ -14,14 +17,16 @@ export default function SessionModal() {
           <div className="flex items-start justify-between">
             <div>
               <h3 className="text-lg font-bold text-slate-900 dark:text-white">Session Complete!</h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-                {selectedSession.sessionType === 'morning' ? '🌅 Morning' : '🌙 Evening'} — {selectedSession.session.time}
-              </p>
+              <div className="flex items-center gap-1.5 mt-1 text-sm text-slate-500 dark:text-slate-400">
+                {isMorning
+                  ? <IconSun className="w-4 h-4 text-orange-500" />
+                  : <IconMoon className="w-4 h-4 text-violet-500" />
+                }
+                <span>{isMorning ? 'Morning' : 'Evening'} — {selectedSession.session.time}</span>
+              </div>
             </div>
             <button onClick={() => setShowSessionModal(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors text-slate-400">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <IconX className="w-5 h-5" />
             </button>
           </div>
 
@@ -29,9 +34,9 @@ export default function SessionModal() {
           <div className="mt-4 p-3 rounded-xl bg-gradient-to-r from-emerald-50 to-brand-50 dark:from-emerald-900/20 dark:to-brand-900/20 border border-emerald-100 dark:border-emerald-800">
             <p className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 mb-1.5">Career Impact</p>
             <div className="space-y-0.5 text-xs">
-              <p className="text-emerald-700 dark:text-emerald-400">✓ +3% job readiness improvement</p>
-              <p className="text-brand-700 dark:text-brand-400">↑ Building toward: {careerReadiness.nextPrioritySkill?.name || 'next skill'}</p>
-              <p className="text-violet-700 dark:text-violet-400">$ +${(careerReadiness.nextPrioritySkill?.salaryImpact || 10000).toLocaleString()} earning potential</p>
+              <p className="text-emerald-700 dark:text-emerald-400">+3% job readiness improvement</p>
+              <p className="text-brand-700 dark:text-brand-400">Building toward: {careerReadiness.nextPrioritySkill?.name || 'next skill'}</p>
+              <p className="text-violet-700 dark:text-violet-400">+${(careerReadiness.nextPrioritySkill?.salaryImpact || 10000).toLocaleString()} earning potential</p>
             </div>
           </div>
         </div>
@@ -66,13 +71,13 @@ export default function SessionModal() {
                 <button
                   key={n}
                   onClick={() => setSessionDifficulty(n)}
-                  className={`flex-1 py-2.5 rounded-xl border text-lg transition-all ${
+                  className={`flex-1 py-2.5 rounded-xl border transition-all flex items-center justify-center ${
                     n <= sessionDifficulty
                       ? 'border-amber-400 bg-amber-50 dark:bg-amber-900/30'
                       : 'border-slate-200 dark:border-slate-600 hover:border-amber-300'
                   }`}
                 >
-                  {n <= sessionDifficulty ? '⭐' : '☆'}
+                  <IconStar className="w-5 h-5 text-amber-400" filled={n <= sessionDifficulty} />
                 </button>
               ))}
             </div>
@@ -92,7 +97,7 @@ export default function SessionModal() {
             <textarea
               value={sessionNotes}
               onChange={e => setSessionNotes(e.target.value)}
-              placeholder="What did you learn? Key insights? How will this help your data analyst career? Portfolio ideas?"
+              placeholder="What did you learn? Key insights? How will this help your career? Portfolio ideas?"
               className="input resize-none"
               rows={4}
             />
@@ -106,7 +111,7 @@ export default function SessionModal() {
             onClick={saveSession}
             className="flex-1 py-2.5 btn bg-gradient-to-r from-brand-600 to-violet-600 hover:from-brand-700 hover:to-violet-700 text-white font-semibold rounded-xl shadow-sm"
           >
-            Save & Complete ✓
+            Save & Complete
           </button>
         </div>
       </div>

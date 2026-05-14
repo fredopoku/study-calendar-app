@@ -1,6 +1,7 @@
 import { useApp } from '../../context/AppContext';
 import { formatTime } from '../../utils/helpers';
 import CircularProgress from '../ui/CircularProgress';
+import { IconPlay, IconPause, IconStop } from '../ui/Icons';
 
 export default function PomodoroTimer({ compact = false }) {
   const { timerActive, timerPaused, timeLeft, isBreakTime, todayPomodoros, startTimer, pauseTimer, stopTimer, stats, notificationsEnabled, requestNotifications } = useApp();
@@ -21,9 +22,12 @@ export default function PomodoroTimer({ compact = false }) {
         </div>
         <button
           onClick={timerActive ? (timerPaused ? startTimer : pauseTimer) : startTimer}
-          className="ml-auto w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs flex items-center justify-center transition-colors"
+          className="ml-auto w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
         >
-          {timerActive && !timerPaused ? '⏸' : '▶'}
+          {timerActive && !timerPaused
+            ? <IconPause className="w-3.5 h-3.5" />
+            : <IconPlay className="w-3.5 h-3.5" />
+          }
         </button>
       </div>
     );
@@ -41,23 +45,28 @@ export default function PomodoroTimer({ compact = false }) {
         >
           <div className="text-center">
             <div className="text-3xl font-bold text-white tabular-nums">{formatTime(timeLeft)}</div>
-            <div className="text-xs text-slate-400 mt-0.5">{isBreakTime ? '☕ Break' : '📚 Focus'}</div>
+            <div className="text-xs text-slate-400 mt-0.5 font-medium">
+              {isBreakTime ? 'Break' : 'Focus'}
+            </div>
           </div>
         </CircularProgress>
       </div>
 
       <div className="flex items-center justify-center gap-2 mb-4">
         {!timerActive ? (
-          <button onClick={startTimer} className="btn bg-brand-600 hover:bg-brand-700 text-white px-5 py-2 text-sm rounded-xl">
-            ▶ Start Focus
+          <button onClick={startTimer} className="btn bg-brand-600 hover:bg-brand-700 text-white px-5 py-2 text-sm rounded-xl flex items-center gap-2">
+            <IconPlay className="w-4 h-4" />
+            Start Focus
           </button>
         ) : (
           <>
-            <button onClick={pauseTimer} className="btn bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 text-sm rounded-xl">
-              {timerPaused ? '▶ Resume' : '⏸ Pause'}
+            <button onClick={pauseTimer} className="btn bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 text-sm rounded-xl flex items-center gap-2">
+              {timerPaused ? <IconPlay className="w-4 h-4" /> : <IconPause className="w-4 h-4" />}
+              {timerPaused ? 'Resume' : 'Pause'}
             </button>
-            <button onClick={stopTimer} className="btn bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 text-sm rounded-xl">
-              ⏹ Stop
+            <button onClick={stopTimer} className="btn bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 text-sm rounded-xl flex items-center gap-2">
+              <IconStop className="w-4 h-4" />
+              Stop
             </button>
           </>
         )}

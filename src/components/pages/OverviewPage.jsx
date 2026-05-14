@@ -5,6 +5,47 @@ import CircularProgress from '../ui/CircularProgress';
 import PomodoroTimer from '../timer/PomodoroTimer';
 import { getMotivationalMessage, formatMinutes, getWeekStatus } from '../../utils/helpers';
 import { courseModules } from '../../data/courseData';
+import {
+  IconCalendar, IconFlame, IconBook, IconTarget, IconBrain,
+  IconChevronRight, IconCheckCircle, IconSun, IconMoon,
+  IconBriefcase,
+} from '../ui/Icons';
+
+function SessionRow({ session, type, onNavigate }) {
+  if (!session) return null;
+  const isMorning = type === 'morning';
+  const completed = session.completed;
+
+  const borderBg = completed
+    ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800'
+    : isMorning
+      ? 'bg-orange-50 dark:bg-orange-900/10 border-orange-200 dark:border-orange-800'
+      : 'bg-violet-50 dark:bg-violet-900/10 border-violet-200 dark:border-violet-800';
+
+  const timeColor = completed
+    ? 'text-emerald-600 dark:text-emerald-400'
+    : isMorning ? 'text-orange-600 dark:text-orange-400' : 'text-violet-600 dark:text-violet-400';
+
+  const Icon = completed
+    ? <IconCheckCircle className="w-5 h-5 text-emerald-500" />
+    : isMorning
+      ? <IconSun className="w-5 h-5 text-orange-500" />
+      : <IconMoon className="w-5 h-5 text-violet-500" />;
+
+  return (
+    <div className={`flex items-center gap-4 p-4 rounded-xl border transition-all ${borderBg}`}>
+      <span className="flex-shrink-0">{Icon}</span>
+      <div className="min-w-0 flex-1">
+        <p className={`text-xs font-semibold ${timeColor}`}>{session.time}</p>
+        <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">{session.activity}</p>
+      </div>
+      {completed
+        ? <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex-shrink-0">Done</span>
+        : <button onClick={onNavigate} className="text-xs text-brand-600 dark:text-brand-400 font-medium flex-shrink-0 hover:underline">Start</button>
+      }
+    </div>
+  );
+}
 
 export default function OverviewPage() {
   const {
@@ -29,6 +70,12 @@ export default function OverviewPage() {
 
   const name = userProfile?.name ? `, ${userProfile.name}` : '';
   const studyMinutes = gamification.totalSessions * 45;
+
+  const quickActions = [
+    { icon: <IconBrain className="w-4 h-4" />, label: 'Ask AI Tutor', tab: 'ai-tutor' },
+    { icon: <IconCalendar className="w-4 h-4" />, label: 'View Schedule', tab: 'schedule' },
+    { icon: <IconBriefcase className="w-4 h-4" />, label: 'Career Hub', tab: 'career' },
+  ];
 
   return (
     <div className="space-y-5">
@@ -63,11 +110,11 @@ export default function OverviewPage() {
             {getMotivationalMessage(careerReadiness.readinessScore, careerReadiness.matchedJobs, careerReadiness.potentialSalaryIncrease)}
           </p>
 
-          {/* Streak + badges */}
           <div className="flex flex-wrap items-center gap-2 mb-4">
             {gamification.streak > 0 && (
-              <span className="flex items-center gap-1 bg-orange-500/30 text-orange-200 text-xs font-semibold px-2.5 py-1 rounded-full">
-                🔥 {gamification.streak}-day streak
+              <span className="flex items-center gap-1.5 bg-orange-500/30 text-orange-200 text-xs font-semibold px-2.5 py-1 rounded-full">
+                <IconFlame className="w-3 h-3" />
+                {gamification.streak}-day streak
               </span>
             )}
             <span className={`badge text-xs font-semibold px-2.5 py-1 rounded-full ${weekStatus.bg} ${weekStatus.color}`}>
@@ -86,11 +133,10 @@ export default function OverviewPage() {
             )}
           </div>
 
-          {/* XP progress bar */}
           <div>
             <div className="flex justify-between text-xs text-brand-200 mb-1.5">
               <span>{gamification.xp} XP</span>
-              <span>{xpToNextLevel > 0 ? `${xpToNextLevel} XP to Level ${currentLevel.level + 1}` : '🏆 Max Level'}</span>
+              <span>{xpToNextLevel > 0 ? `${xpToNextLevel} XP to Level ${currentLevel.level + 1}` : 'Max Level'}</span>
             </div>
             <div className="w-full bg-white/20 rounded-full h-2 overflow-hidden">
               <div className="h-2 bg-white rounded-full transition-all duration-700" style={{ width: `${xpProgress}%` }} />
@@ -101,10 +147,10 @@ export default function OverviewPage() {
 
       {/* Stats grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <StatCard label="Week Progress" value={`${stats.weekProgress}%`} sub={`${stats.completedSessions}/${stats.totalSessions} sessions`} icon="📅" accent="indigo" />
-        <StatCard label="Study Streak" value={`${gamification.streak}d`} sub={gamification.streak > 0 ? 'Keep it going!' : 'Start today!'} icon="🔥" accent="amber" />
-        <StatCard label="Total Sessions" value={gamification.totalSessions} sub={formatMinutes(studyMinutes) + ' studied'} icon="📚" accent="emerald" />
-        <StatCard label="Career Ready" value={`${careerReadiness.readinessScore}%`} sub={`${careerReadiness.matchedJobs?.toLocaleString()} jobs`} icon="🎯" accent="violet" />
+        <StatCard label="Week Progress" value={`${stats.weekProgress}%`} sub={`${stats.completedSessions}/${stats.totalSessions} sessions`} icon={<IconCalendar className="w-5 h-5" />} accent="indigo" />
+        <StatCard label="Study Streak" value={`${gamification.streak}d`} sub={gamification.streak > 0 ? 'Keep it going!' : 'Start today!'} icon={<IconFlame className="w-5 h-5" />} accent="amber" />
+        <StatCard label="Total Sessions" value={gamification.totalSessions} sub={formatMinutes(studyMinutes) + ' studied'} icon={<IconBook className="w-5 h-5" />} accent="emerald" />
+        <StatCard label="Career Ready" value={`${careerReadiness.readinessScore}%`} sub={`${careerReadiness.matchedJobs?.toLocaleString()} jobs`} icon={<IconTarget className="w-5 h-5" />} accent="violet" />
       </div>
 
       {/* Middle row */}
@@ -161,11 +207,15 @@ export default function OverviewPage() {
 
       {/* AI Tutor CTA */}
       <div className="rounded-2xl bg-gradient-to-r from-violet-600 to-brand-600 p-5 text-white relative overflow-hidden">
-        <div className="absolute right-4 top-0 text-7xl opacity-10 select-none">🤖</div>
+        <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-10">
+          <IconBrain className="w-20 h-20" />
+        </div>
         <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-xl">🤖</span>
+            <div className="flex items-center gap-2.5 mb-2">
+              <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                <IconBrain className="w-4 h-4" />
+              </div>
               <h3 className="font-bold text-lg">Your AI Tutor is Ready</h3>
             </div>
             <p className="text-violet-200 text-sm">
@@ -199,7 +249,11 @@ export default function OverviewPage() {
           <p className="text-sm text-slate-500 dark:text-slate-400">No sessions scheduled today. Rest up!</p>
         ) : todayEntry.isRestDay ? (
           <div className="flex items-center gap-3 p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
-            <span className="text-2xl">🌿</span>
+            <div className="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-800/50 flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+              </svg>
+            </div>
             <div>
               <p className="font-medium text-emerald-800 dark:text-emerald-300">Rest Day</p>
               <p className="text-xs text-emerald-600 dark:text-emerald-400">Well-deserved break — see you tomorrow!</p>
@@ -207,32 +261,8 @@ export default function OverviewPage() {
           </div>
         ) : (
           <div className="space-y-3">
-            {todayEntry.morningSession && (
-              <div className={`flex items-center gap-4 p-4 rounded-xl border transition-all ${todayEntry.morningSession.completed ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800' : 'bg-orange-50 dark:bg-orange-900/10 border-orange-200 dark:border-orange-800'}`}>
-                <span className="text-xl flex-shrink-0">{todayEntry.morningSession.completed ? '✅' : '🌅'}</span>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-semibold text-orange-600 dark:text-orange-400">{todayEntry.morningSession.time}</p>
-                  <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">{todayEntry.morningSession.activity}</p>
-                </div>
-                {todayEntry.morningSession.completed
-                  ? <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex-shrink-0">Done ✓</span>
-                  : <button onClick={() => setActiveTab('schedule')} className="text-xs text-brand-600 dark:text-brand-400 font-medium flex-shrink-0 hover:underline">Start</button>
-                }
-              </div>
-            )}
-            {todayEntry.eveningSession && (
-              <div className={`flex items-center gap-4 p-4 rounded-xl border transition-all ${todayEntry.eveningSession.completed ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800' : 'bg-violet-50 dark:bg-violet-900/10 border-violet-200 dark:border-violet-800'}`}>
-                <span className="text-xl flex-shrink-0">{todayEntry.eveningSession.completed ? '✅' : '🌙'}</span>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-semibold text-violet-600 dark:text-violet-400">{todayEntry.eveningSession.time}</p>
-                  <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">{todayEntry.eveningSession.activity}</p>
-                </div>
-                {todayEntry.eveningSession.completed
-                  ? <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex-shrink-0">Done ✓</span>
-                  : <button onClick={() => setActiveTab('schedule')} className="text-xs text-brand-600 dark:text-brand-400 font-medium flex-shrink-0 hover:underline">Start</button>
-                }
-              </div>
-            )}
+            <SessionRow session={todayEntry.morningSession} type="morning" onNavigate={() => setActiveTab('schedule')} />
+            <SessionRow session={todayEntry.eveningSession} type="evening" onNavigate={() => setActiveTab('schedule')} />
           </div>
         )}
       </div>
@@ -285,22 +315,16 @@ export default function OverviewPage() {
         {/* Quick actions */}
         <div className="card p-4">
           <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-3">Quick Actions</h3>
-          <div className="space-y-2">
-            {[
-              { icon: '🤖', label: 'Ask AI Tutor', tab: 'ai-tutor' },
-              { icon: '📅', label: 'View Schedule', tab: 'schedule' },
-              { icon: '💼', label: 'Career Hub', tab: 'career' },
-            ].map(a => (
+          <div className="space-y-1.5">
+            {quickActions.map(a => (
               <button
                 key={a.tab}
                 onClick={() => setActiveTab(a.tab)}
                 className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors text-left"
               >
-                <span className="text-base">{a.icon}</span>
+                <span className="text-slate-500 dark:text-slate-400">{a.icon}</span>
                 <span className="text-xs font-medium text-slate-700 dark:text-slate-200">{a.label}</span>
-                <svg className="w-3.5 h-3.5 ml-auto text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
+                <IconChevronRight className="w-3.5 h-3.5 ml-auto text-slate-400" />
               </button>
             ))}
           </div>

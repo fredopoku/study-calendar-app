@@ -3,6 +3,7 @@ import { useApp } from '../../context/AppContext';
 import CircularProgress from '../ui/CircularProgress';
 import { ACHIEVEMENTS, RARITY_COLORS } from '../../utils/gamification';
 import { formatMinutes } from '../../utils/helpers';
+import { IconBook, IconFlame, IconClock, IconTarget, IconLock } from '../ui/Icons';
 
 function MiniBar({ value, max, color }) {
   const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
@@ -32,10 +33,44 @@ function ActivityHeatmap({ data }) {
   );
 }
 
-export default function AnalyticsPage() {
-  const { stats, gamification, currentLevel, xpProgress, xpToNextLevel, careerReadiness, studySchedule, isPro, setActiveTab } = useApp();
+const statCards = (gamification, studyMinutes) => [
+  {
+    label: 'Total Sessions',
+    value: gamification.totalSessions,
+    icon: <IconBook className="w-6 h-6" />,
+    color: 'text-brand-600 dark:text-brand-400',
+    bg: 'bg-brand-50 dark:bg-brand-900/20',
+    iconColor: 'text-brand-500',
+  },
+  {
+    label: 'Current Streak',
+    value: `${gamification.streak} days`,
+    icon: <IconFlame className="w-6 h-6" />,
+    color: 'text-orange-600 dark:text-orange-400',
+    bg: 'bg-orange-50 dark:bg-orange-900/20',
+    iconColor: 'text-orange-500',
+  },
+  {
+    label: 'Total Study Time',
+    value: formatMinutes(studyMinutes),
+    icon: <IconClock className="w-6 h-6" />,
+    color: 'text-emerald-600 dark:text-emerald-400',
+    bg: 'bg-emerald-50 dark:bg-emerald-900/20',
+    iconColor: 'text-emerald-500',
+  },
+  {
+    label: 'Pomodoros Done',
+    value: gamification.totalPomodoros,
+    icon: <IconTarget className="w-6 h-6" />,
+    color: 'text-rose-600 dark:text-rose-400',
+    bg: 'bg-rose-50 dark:bg-rose-900/20',
+    iconColor: 'text-rose-500',
+  },
+];
 
-  // Build 28-day activity data
+export default function AnalyticsPage() {
+  const { gamification, currentLevel, xpProgress, xpToNextLevel, careerReadiness, studySchedule, isPro, setActiveTab } = useApp();
+
   const activityData = useMemo(() => {
     const days = [];
     const completedDates = new Set();
@@ -55,7 +90,6 @@ export default function AnalyticsPage() {
     return days;
   }, [studySchedule]);
 
-  // Weekly session breakdown (last 7 days)
   const weeklyData = useMemo(() => {
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     return days.map((day, i) => ({
@@ -71,6 +105,8 @@ export default function AnalyticsPage() {
 
   const studyMinutes = gamification.totalSessions * 45;
   const avgSessionMinutes = gamification.totalSessions > 0 ? Math.round(studyMinutes / gamification.totalSessions) : 0;
+
+  const cards = statCards(gamification, studyMinutes);
 
   return (
     <div className="space-y-6">
@@ -92,14 +128,11 @@ export default function AnalyticsPage() {
 
       {/* Key stats row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { label: 'Total Sessions', value: gamification.totalSessions, icon: '📚', color: 'text-brand-600 dark:text-brand-400' },
-          { label: 'Current Streak', value: `${gamification.streak} days`, icon: '🔥', color: 'text-orange-600 dark:text-orange-400' },
-          { label: 'Total Study Time', value: formatMinutes(studyMinutes), icon: '⏱', color: 'text-emerald-600 dark:text-emerald-400' },
-          { label: 'Pomodoros Done', value: gamification.totalPomodoros, icon: '🍅', color: 'text-rose-600 dark:text-rose-400' },
-        ].map(s => (
-          <div key={s.label} className="card p-4 text-center">
-            <div className="text-2xl mb-2">{s.icon}</div>
+        {cards.map(s => (
+          <div key={s.label} className={`card p-4 text-center`}>
+            <div className={`w-11 h-11 rounded-xl ${s.bg} flex items-center justify-center mx-auto mb-3 ${s.iconColor}`}>
+              {s.icon}
+            </div>
             <div className={`text-2xl font-bold ${s.color}`}>{s.value}</div>
             <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{s.label}</div>
           </div>
@@ -264,7 +297,9 @@ export default function AnalyticsPage() {
               {lockedAchievements.slice(0, 6).map(a => (
                 <div key={a.id} className="border border-slate-100 dark:border-slate-700 rounded-xl p-3 opacity-50">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xl grayscale">{a.icon}</span>
+                    <div className="w-6 h-6 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center flex-shrink-0">
+                      <IconLock className="w-3.5 h-3.5 text-slate-400" />
+                    </div>
                     <span className="text-xs font-bold text-slate-500 dark:text-slate-400">{a.name}</span>
                   </div>
                   <p className="text-[10px] text-slate-400">{a.description}</p>

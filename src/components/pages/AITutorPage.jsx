@@ -1,18 +1,32 @@
 import { useState, useRef, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
-import { GREETING_MESSAGES, SUGGESTED_PROMPTS } from '../../data/mockAI';
+import { SUGGESTED_PROMPTS, GREETING_MESSAGES } from '../../data/mockAI';
+import { IconBrain, IconSend } from '../ui/Icons';
 
-function MessageBubble({ msg }) {
+function AIAvatar() {
+  return (
+    <div className="w-8 h-8 rounded-xl flex-shrink-0 flex items-center justify-center bg-gradient-to-br from-violet-500 to-brand-600">
+      <IconBrain className="w-4 h-4 text-white" />
+    </div>
+  );
+}
+
+function UserAvatar({ name }) {
+  const initials = name
+    ? name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+    : 'U';
+  return (
+    <div className="w-8 h-8 rounded-xl flex-shrink-0 flex items-center justify-center bg-brand-600 text-white text-xs font-bold">
+      {initials}
+    </div>
+  );
+}
+
+function MessageBubble({ msg, userName }) {
   const isUser = msg.role === 'user';
   return (
     <div className={`flex gap-3 ${isUser ? 'flex-row-reverse' : ''}`}>
-      <div className={`w-8 h-8 rounded-xl flex-shrink-0 flex items-center justify-center text-sm ${
-        isUser
-          ? 'bg-brand-600 text-white'
-          : 'bg-gradient-to-br from-violet-500 to-brand-600 text-white'
-      }`}>
-        {isUser ? '👤' : '🤖'}
-      </div>
+      {isUser ? <UserAvatar name={userName} /> : <AIAvatar />}
       <div className={`max-w-[80%] ${isUser ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
         <div className={`px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
           isUser
@@ -32,9 +46,7 @@ function MessageBubble({ msg }) {
 function TypingIndicator() {
   return (
     <div className="flex gap-3">
-      <div className="w-8 h-8 rounded-xl flex-shrink-0 flex items-center justify-center text-sm bg-gradient-to-br from-violet-500 to-brand-600 text-white">
-        🤖
-      </div>
+      <AIAvatar />
       <div className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 px-4 py-3 rounded-2xl rounded-tl-sm shadow-sm">
         <div className="flex gap-1 items-center h-4">
           <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
@@ -72,7 +84,6 @@ export default function AITutorPage() {
       return;
     }
 
-    // Simulate AI typing delay
     await new Promise(r => setTimeout(r, 1200 + Math.random() * 800));
     setIsTyping(false);
     inputRef.current?.focus();
@@ -98,8 +109,8 @@ export default function AITutorPage() {
       <div className="flex-shrink-0 bg-gradient-to-r from-brand-600 to-violet-600 text-white px-4 lg:px-6 py-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-xl">
-              🤖
+            <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center">
+              <IconBrain className="w-5 h-5 text-white" />
             </div>
             <div>
               <h2 className="font-bold text-lg leading-none">AI Learning Tutor</h2>
@@ -139,9 +150,7 @@ export default function AITutorPage() {
         <div className="max-w-4xl mx-auto space-y-4">
           {/* Greeting */}
           <div className="flex gap-3">
-            <div className="w-8 h-8 rounded-xl flex-shrink-0 flex items-center justify-center text-sm bg-gradient-to-br from-violet-500 to-brand-600 text-white">
-              🤖
-            </div>
+            <AIAvatar />
             <div className="max-w-[80%]">
               <div className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 px-4 py-3 rounded-2xl rounded-tl-sm shadow-sm text-sm text-slate-800 dark:text-slate-100 leading-relaxed">
                 {greeting.replace('Hey there', `Hey ${name}`).replace('Hi!', `Hi ${name}!`)}
@@ -151,7 +160,7 @@ export default function AITutorPage() {
 
           {/* Chat history */}
           {aiChats.map(msg => (
-            <MessageBubble key={msg.id} msg={msg} />
+            <MessageBubble key={msg.id} msg={msg} userName={userProfile?.name} />
           ))}
 
           {isTyping && <TypingIndicator />}
@@ -159,7 +168,7 @@ export default function AITutorPage() {
         </div>
       </div>
 
-      {/* Suggested prompts (show when no chats) */}
+      {/* Suggested prompts */}
       {aiChats.length === 0 && !isTyping && (
         <div className="flex-shrink-0 bg-slate-50 dark:bg-slate-950 px-4 lg:px-6 pb-3">
           <div className="max-w-4xl mx-auto">
@@ -209,11 +218,9 @@ export default function AITutorPage() {
               <button
                 onClick={handleSend}
                 disabled={!input.trim() || isTyping}
-                className="btn bg-brand-600 hover:bg-brand-700 text-white w-11 h-11 p-0 flex-shrink-0 disabled:opacity-40"
+                className="btn bg-brand-600 hover:bg-brand-700 text-white w-11 h-11 p-0 flex-shrink-0 disabled:opacity-40 flex items-center justify-center"
               >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                </svg>
+                <IconSend className="w-5 h-5" />
               </button>
             </div>
           )}

@@ -2,29 +2,37 @@ import { useApp } from '../../context/AppContext';
 import ProgressBar from '../ui/ProgressBar';
 import { getWeekStatus } from '../../utils/helpers';
 import SessionModal from '../modals/SessionModal';
+import { IconCheckCircle, IconSun, IconMoon, IconClock, IconStar } from '../ui/Icons';
 
 function SessionCard({ session, type, dayId, isOptional }) {
   const { toggleSession, startTimer } = useApp();
   if (!session) return null;
 
   const isMorning = type === 'morning';
-  const icon = session.completed ? '✅' : (isMorning ? '🌅' : '🌙');
   const borderClass = session.completed
     ? 'border-emerald-200 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-900/20'
     : isMorning
       ? 'border-orange-200 dark:border-orange-700/50 bg-orange-50/60 dark:bg-orange-900/10 hover:border-orange-300 dark:hover:border-orange-600'
       : 'border-violet-200 dark:border-violet-700/50 bg-violet-50/60 dark:bg-violet-900/10 hover:border-violet-300 dark:hover:border-violet-600';
-  const timeColor = session.completed ? 'text-emerald-600 dark:text-emerald-400' : (isMorning ? 'text-orange-600 dark:text-orange-400' : 'text-violet-600 dark:text-violet-400');
+  const timeColor = session.completed
+    ? 'text-emerald-600 dark:text-emerald-400'
+    : isMorning ? 'text-orange-600 dark:text-orange-400' : 'text-violet-600 dark:text-violet-400';
+
+  const StatusIcon = session.completed
+    ? <IconCheckCircle className="w-5 h-5 text-emerald-500" />
+    : isMorning
+      ? <IconSun className="w-5 h-5 text-orange-400" />
+      : <IconMoon className="w-5 h-5 text-violet-400" />;
 
   return (
     <div className={`border rounded-xl p-4 transition-all duration-200 ${borderClass}`}>
       <div className="flex items-center gap-3">
         <button
           onClick={() => toggleSession(dayId, type)}
-          className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-lg"
+          className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
           aria-label={session.completed ? 'Mark incomplete' : 'Mark complete'}
         >
-          {icon}
+          {StatusIcon}
         </button>
 
         <div className="flex-1 min-w-0">
@@ -34,9 +42,16 @@ function SessionCard({ session, type, dayId, isOptional }) {
           </div>
           <p className="text-sm font-medium text-slate-800 dark:text-slate-200 leading-snug">{session.activity}</p>
           {session.completed && session.technique && (
-            <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
-              {session.difficulty > 0 && '⭐'.repeat(session.difficulty)} {session.technique.replace(/-/g, ' ')}
-            </p>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              {session.difficulty > 0 && (
+                <div className="flex gap-0.5">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <IconStar key={i} className="w-3 h-3 text-amber-400" filled={i < session.difficulty} />
+                  ))}
+                </div>
+              )}
+              <span className="text-[10px] text-slate-400">{session.technique.replace(/-/g, ' ')}</span>
+            </div>
           )}
           {session.completed && session.notes && (
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 italic line-clamp-2">"{session.notes}"</p>
@@ -49,9 +64,7 @@ function SessionCard({ session, type, dayId, isOptional }) {
             className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-slate-400 dark:text-slate-500 hover:text-brand-600 dark:hover:text-brand-400"
             title="Start focus timer"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
-            </svg>
+            <IconClock className="w-4 h-4" />
           </button>
         )}
       </div>
@@ -85,8 +98,8 @@ function DayCard({ day }) {
           </div>
         </div>
         {day.dayCompleted && !day.isRestDay && (
-          <div className="flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
-            <span>🏆</span>
+          <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+            <IconCheckCircle className="w-4 h-4" />
             <span className="hidden sm:inline">Complete</span>
           </div>
         )}
@@ -95,7 +108,11 @@ function DayCard({ day }) {
       {/* Sessions */}
       {day.isRestDay ? (
         <div className="flex items-center gap-3 p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
-          <span className="text-2xl">🌿</span>
+          <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-800/50 flex items-center justify-center flex-shrink-0">
+            <svg className="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+          </div>
           <div>
             <p className="text-sm font-medium text-emerald-800 dark:text-emerald-300">Rest & Recharge</p>
             <p className="text-xs text-emerald-600 dark:text-emerald-500">Well-deserved break — you've earned it!</p>
@@ -130,7 +147,7 @@ export default function SchedulePage() {
             </p>
             <h2 className="text-xl font-bold">Week {stats.currentWeek} of {stats.totalWeeks}</h2>
             <div className="flex items-center gap-2 mt-1">
-              <span className={`badge text-xs px-2.5 py-1 rounded-full bg-white/20 text-white`}>{weekStatus.label}</span>
+              <span className="badge text-xs px-2.5 py-1 rounded-full bg-white/20 text-white">{weekStatus.label}</span>
               <span className="text-white/70 text-xs">{stats.completedSessions}/{stats.totalSessions} sessions done</span>
             </div>
           </div>
