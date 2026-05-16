@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/study-calendar-app/static/css/main.767cc82f.css",
+    "main.js": "/study-calendar-app/static/js/main.048f67b1.js",
+    "index.html": "/study-calendar-app/index.html",
+    "main.767cc82f.css.map": "/study-calendar-app/static/css/main.767cc82f.css.map",
+    "main.048f67b1.js.map": "/study-calendar-app/static/js/main.048f67b1.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.767cc82f.css",
+    "static/js/main.048f67b1.js"
+  ]
+}
